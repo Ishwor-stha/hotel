@@ -1,9 +1,11 @@
-const { connection } = require("../db")
-const errorHandling=require("../utils/errorHandling")
-module.exports.getAll = async(req, res, next) => {
+const { connection, connect } = require("../db")
+const { validateEmail } = require("../utils/emailValidator")
+const errorHandling = require("../utils/errorHandling")
+const { isValidNepaliPhoneNumber } = require("../utils/phNoValidation")
+module.exports.getAll = async (req, res, next) => {
     try {
         const query = `SELECT * FROM admin`
-        let [data] =await connection.promise().query(query)
+        let [data] = await connection.promise().query(query)
         console.log(data)
         res.status(200).json({
             "status": true,
@@ -19,15 +21,21 @@ module.exports.getAll = async(req, res, next) => {
 
 }
 
-module.exports.createAdmin=(req,res,next)=>{
+module.exports.createAdmin = async(req, res, next) => {
     try {
-        const {name,email,phone,password,confirmPassword}=req.body
-        if(!name || !email || !phone || !password || !confirmPassword) return next(new errorHandling(400,"All fields are required."))
-        if(password !==confirmPassword)return next(new errorHandling(400,"Password doesnot match with confirm password."))
+        const { name, email, phone, password, confirmPassword } = req.body
+        if (!name || !email || !phone || !password || !confirmPassword) return next(new errorHandling(400, "All fields are required."))
+        if (password !== confirmPassword) return next(new errorHandling(400, "Password doesnot match with confirm password."))
+        // email validation
+        if (!validateEmail(email)) return next(new errorHandling(400, "Please enter valid email address."))
+        // ph no validation
+        if (!isValidNepaliPhoneNumber(phone))return next(new errorHandling(400,"Please enter valid phone number."))
+        const query=`INSERT INTO admin (name, email, password, phone) VALUES (${name},${email},${password},${phone})`
+        const create=await connection.promise().query(query)
         } catch (error) {
         return res.status(500).json({
-            "status":false,
-            "message":error.message ||"Something went wrong."
+            "status": false,
+            "message": error.message || "Something went wrong."
         })
     }
 
