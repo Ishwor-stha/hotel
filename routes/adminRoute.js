@@ -1,5 +1,6 @@
 const Router=require("express").Router()
-const {getAll}=require("../controller/adminController")
+const {getAll,createAdmin}=require("../controller/adminController")
 Router.route("/get").get(getAll)
+Router.route("/create-admin").post(createAdmin)
 
 module.exports=Router
