@@ -6,6 +6,7 @@ const adminRoute=require("./routes/adminRoute")
 const errorController = require("./controller/errorController")
 dotenv.config()
 connect()
+app.use(express.json())
 
 app.use("/api/admin/",adminRoute)
 

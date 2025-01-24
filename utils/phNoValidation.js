@@ -1,10 +1,10 @@
-module.exports.isValidNepaliPhoneNumber=(phoneNumber)=> {
-    // Regular expression to match valid Nepali mobile numbers or landline numbers
-    const nepaliPhonePattern = /^(98[0-9]{1}[0-9]{7}|97[0-9]{1}[0-9]{7}|981[0-9]{1}[0-9]{7}|980[0-9]{1}[0-9]{7}|01-[0-9]{7}|01[0-9]{7})$/;
+module.exports.isValidNepaliPhoneNumber = (phoneNumber) => {
+    // Convert input to a string and remove spaces and hyphens
+    const cleanPhoneNumber = String(phoneNumber).replace(/[-\s]/g, '');
 
-    // Remove spaces and hyphens for validation
-    const cleanPhoneNumber = phoneNumber.replace(/[-\s]/g, '');
+    // Regular expression to match valid Nepali phone numbers
+    const nepaliPhonePattern = /^(98\d{8}|97\d{8}|981\d{7}|980\d{7}|01-?\d{7})$/;
 
-    // Test the cleaned phone number
+    
     return nepaliPhonePattern.test(cleanPhoneNumber);
-}
+};
