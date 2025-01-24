@@ -2,6 +2,7 @@ const { connection, connect } = require("../db")
 const { validateEmail } = require("../utils/emailValidator")
 const errorHandling = require("../utils/errorHandling")
 const { isValidNepaliPhoneNumber } = require("../utils/phNoValidation")
+const bcrypt=require("bcryptjs")
 
 
 // @desc:test route
@@ -39,8 +40,9 @@ module.exports.createAdmin = async (req, res, next) => {
         if (!isValidNepaliPhoneNumber(phone)) return next(new errorHandling(400, "Please enter valid phone number."))
         // const query=`INSERT INTO admin (name, email, password, phone) VALUES (${name},${email},${password},${phone})`//vulnerable to sql injection
         const query = `INSERT INTO admin (name, email, password, phone) VALUES (?,?,?,?)`
+        const hashedPassword=bcrypt.hashSync(password,10)
 
-        const create = await connection.promise().query(query, [name, email, password, phone])//substuting the ???? from the actual data
+        const create = await connection.promise().query(query, [name, email, hashedPassword, phone])//substuting the ???? from the actual data
         res.status(200).json({
             "status": true,
             "message": `${name} created sucessfully`
