@@ -1,6 +1,7 @@
 const express=require("express")
 const app=express()
 const dotenv=require("dotenv")
+const cookieParser=require("cookie-parser")
 const {connect}=require("./db")
 const adminRoute=require("./routes/adminRoute")
 const errorController = require("./controller/errorController")

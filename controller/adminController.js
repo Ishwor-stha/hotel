@@ -2,7 +2,8 @@ const { connection, connect } = require("../db")
 const { validateEmail } = require("../utils/emailValidator")
 const errorHandling = require("../utils/errorHandling")
 const { isValidNepaliPhoneNumber } = require("../utils/phNoValidation")
-const bcrypt=require("bcryptjs")
+const bcrypt = require("bcryptjs")
+const jwt =require("jsonwebtoken")
 
 
 // @desc:test route
@@ -40,7 +41,7 @@ module.exports.createAdmin = async (req, res, next) => {
         if (!isValidNepaliPhoneNumber(phone)) return next(new errorHandling(400, "Please enter valid phone number."))
         // const query=`INSERT INTO admin (name, email, password, phone) VALUES (${name},${email},${password},${phone})`//vulnerable to sql injection
         const query = `INSERT INTO admin (name, email, password, phone) VALUES (?,?,?,?)`
-        const hashedPassword=bcrypt.hashSync(password,10)
+        const hashedPassword = bcrypt.hashSync(password, 10)
 
         const create = await connection.promise().query(query, [name, email, hashedPassword, phone])//substuting the ???? from the actual data
         res.status(200).json({
@@ -48,10 +49,49 @@ module.exports.createAdmin = async (req, res, next) => {
             "message": `${name} created sucessfully`
         })
     } catch (error) {
-        return res.status(500).json({
-            "status": false,
-            "message": error.message || "Something went wrong on server."
-        })
+        return next(new errorHandling(500, error.message))
     }
 
+}
+
+module.exports.login = async (req, res, next) => {
+    try {
+        // Taking userName from client side
+        const userEmail = req.body.email
+        // taking password from client side
+        const userPassword = req.body.password
+        // it there is no user name or password then terminate current middleware and call errorhandling middleware with two argument ie(errormessage,statusCode)
+        if (!userEmail || !userPassword) return next(new errorHandling(400, "Please enter email or password"))
+        if (!validateEmail(userEmail)) return next(new errorHandling(400, "Please enter valid email address."))
+
+        const query = `SELECT * FROM admin WHERE email = ?`;
+        const [userDetail] = await connection.promise().query(query, [userEmail])
+        // if there is no userDetail then terminate current middleware and call errorhandling middleware
+        if (userDetail.length===0) return next(new errorHandling(401, "User not found"))
+        dbPassword=userDetail[0].password
+        dbName=userDetail[0].name
+       
+        const validPassword = await bcrypt.compare(userPassword, dbPassword)//true/false
+
+        // if password doesnot match then terminate this/current middleware and call error handling middleware
+        if (!validPassword) return next(new errorHandling(401,"The username or password is incorrect"))
+        const payload={
+            "id":userDetail[0].id,
+            "email":userDetail[0].email
+        }
+        const token=jwt.sign(payload,process.env.jwt_secret_key,{ expiresIn: process.env.jwt_expiry })
+        res.cookie("auth_token", token, {
+            httpOnly: true,
+            sameSite: "Strict",
+            maxAge: 3600 * 1000
+        });
+        // if password and username is valid then send the response
+        res.status(200).json({
+            status: "success",
+            message: `Hello ${dbName} welcome back.`
+        })
+
+    } catch (error) {
+        return next(new errorHandling(500, error.message))
+    }
 }
