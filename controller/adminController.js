@@ -31,10 +31,10 @@ module.exports.getAll = async (req, res, next) => {
 module.exports.createAdmin = async (req, res, next) => {
     try {
 
-        if (!req.body) return next(new errorHandling(400, "The request body is empty."))
+        if (!req.body) return next(new errorHandling(400, "Fields are empty.Please fill out the fields."))
         const { firstName,lastName, email, phone, password, confirmPassword } = req.body
-        if (!firstName || !lastName|| !email || !phone || !password || !confirmPassword) return next(new errorHandling(400, "All fields are required."))
-        if (password !== confirmPassword) return next(new errorHandling(400, "Password doesnot match with confirm password."))
+        if (!firstName || !lastName|| !email || !phone || !password || !confirmPassword) return next(new errorHandling(400, "Fields are empty.Please fill out the fields."))
+        if (password !== confirmPassword) return next(new errorHandling(400, "Password does not match with confirm password."))
         // email validation
         if (!validateEmail(email)) return next(new errorHandling(400, "Please enter valid email address."))
         // ph no validation
@@ -66,20 +66,20 @@ module.exports.login = async (req, res, next) => {
         // taking password from client side
         const userPassword = req.body.password
         // it there is no user name or password then terminate current middleware and call errorhandling middleware with two argument ie(errormessage,statusCode)
-        if (!userEmail || !userPassword) return next(new errorHandling(400, "Please enter email or password"))
+        if (!userEmail || !userPassword) return next(new errorHandling(400, "Email or password field is empty."))
         if (!validateEmail(userEmail)) return next(new errorHandling(400, "Please enter valid email address."))
 
         const query = `SELECT * FROM admin WHERE email = ?`;
         const [userDetail] = await connection.promise().query(query, [userEmail])
         // if there is no userDetail then terminate current middleware and call errorhandling middleware
-        if (userDetail.length===0) return next(new errorHandling(401, "User not found"))
+        if (userDetail.length===0) return next(new errorHandling(401, "Incorrect email or password.Please try again."))
         dbPassword=userDetail[0].password
         dbName=userDetail[0].name
        
         const validPassword = await bcrypt.compare(userPassword, dbPassword)//true/false
 
         // if password doesnot match then terminate this/current middleware and call error handling middleware
-        if (!validPassword) return next(new errorHandling(401,"The username or password is incorrect"))
+        if (!validPassword) return next(new errorHandling(401,"Incorrect email or password.Please try again."))
         const payload={
             "id":userDetail[0].id,
             "email":userDetail[0].email
