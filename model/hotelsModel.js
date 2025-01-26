@@ -9,7 +9,7 @@ try{
           location VARCHAR(10)  NOT NULL, 
           description TEXT NOT NULL, 
           rating FLOAT CHECK (rating BETWEEN 0 AND 5),
-          image VARCHAR(255) NOT NULL,
+          image VARCHAR(255) NOT NULL
                     
         )
       `
