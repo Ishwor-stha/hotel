@@ -32,8 +32,8 @@ module.exports.createAdmin = async (req, res, next) => {
     try {
 
         if (!req.body) return next(new errorHandling(400, "The request body is empty."))
-        const { name, email, phone, password, confirmPassword } = req.body
-        if (!name || !email || !phone || !password || !confirmPassword) return next(new errorHandling(400, "All fields are required."))
+        const { firstName,lastName, email, phone, password, confirmPassword } = req.body
+        if (!firstName || !lastName|| !email || !phone || !password || !confirmPassword) return next(new errorHandling(400, "All fields are required."))
         if (password !== confirmPassword) return next(new errorHandling(400, "Password doesnot match with confirm password."))
         // email validation
         if (!validateEmail(email)) return next(new errorHandling(400, "Please enter valid email address."))
@@ -42,18 +42,23 @@ module.exports.createAdmin = async (req, res, next) => {
         // const query=`INSERT INTO admin (name, email, password, phone) VALUES (${name},${email},${password},${phone})`//vulnerable to sql injection
         const query = `INSERT INTO admin (name, email, password, phone) VALUES (?,?,?,?)`
         const hashedPassword = bcrypt.hashSync(password, 10)
+        fullName=`${firstName.toLowerCase()} ${lastName.toLowerCase()}`
 
-        const create = await connection.promise().query(query, [name, email, hashedPassword, phone])//substuting the ???? from the actual data
+        const create = await connection.promise().query(query, [fullName, email, hashedPassword, phone])//substuting the ???? from the actual data
         res.status(200).json({
             "status": true,
-            "message": `${name} created sucessfully`
+            "message": `${fullName} created sucessfully`
         })
     } catch (error) {
+    	if(error.code==="ER_DUP_ENTRY") return next(new errorHandling(500,`Email already used please use another email.`))
         return next(new errorHandling(500, error.message))
     }
 
 }
 
+
+// @desc:controller to create an logn
+//@method: POST
 module.exports.login = async (req, res, next) => {
     try {
         // Taking userName from client side
@@ -87,7 +92,7 @@ module.exports.login = async (req, res, next) => {
         });
         // if password and username is valid then send the response
         res.status(200).json({
-            status: "success",
+            status:true,
             message: `Hello ${dbName} welcome back.`
         })
 
