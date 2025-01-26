@@ -1,0 +1,30 @@
+// CREATE TABLE IF NOT EXISTS bookings (
+    // id INT AUTO_INCREMENT PRIMARY KEY,            
+    // user_id INT NOT NULL,                         
+    // room_id INT NOT NULL,                         
+    // hotel_id INT NOT NULL,                        
+    // check_in_date DATE NOT NULL,                  
+    // check_out_date DATE NOT NULL,                 
+    // guests INT NOT NULL,                          
+    // total_price DECIMAL(10, 2) NOT NULL,          
+    // booking_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    // FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    // FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
+    // FOREIGN KEY (hotel_id) REFERENCES hotels(id) ON DELETE CASCADE
+// );
+// 
+const errorHandling = require("../utils/errorHandling")
+const {connection}=require("../db")
+
+module.exports.bookTour=async (req,res,next)=>{
+    if(!req.body)return next(new errorHandling(400,"All fields are required."))
+    const {user_id,room_id,hotel_id,total_price,guests, check_out_date,check_in_date}=req.body
+    if(!user_id || !room_id|| !hotel_id || !total_price || !guests || !check_in_date || !check_out_date)return next(new errorHandling(400,"All fields are required."))
+    const query=`INSERT INTO bookings (user_id,room_id,hotel_id,check_in_date,check_out_date,guest,total_price) VALUES (?,?,?,?,?,?,?)`
+    const booking=await connection.promise().query(query,[user_id,room_id,hotel_id,check_in_date,check_out_date,guests,total_price])
+
+    
+    
+    
+
+}

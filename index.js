@@ -8,8 +8,9 @@ const errorController = require("./controller/errorController")
 dotenv.config()
 connect()
 app.use(express.json())
-
+app.use(cookieParser())
 app.use("/api/admin/",adminRoute)
+
 
 //Handle any unhandled routes with a 404 error
 app.all("*", (req, res) => {
@@ -25,6 +26,7 @@ const port=process.env.PORT ||4000
 app.listen(port,()=>{
     console.log(`Server is listening on port ${port}.`)
 })
+
 
 //  How Foreign Keys are Passed Internally
 // a) From users Table (user_id)
