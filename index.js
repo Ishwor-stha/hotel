@@ -7,7 +7,6 @@ const adminRoute=require("./routes/adminRoute")
 const userRoute=require("./routes/userRoute")
 const errorController = require("./controller/errorController")
 dotenv.config()
-connect()
 app.use(express.json())
 app.use(cookieParser())
 app.use("/api/admin/",adminRoute)
@@ -15,6 +14,7 @@ app.use("/api/user/",userRoute)
 
 
 
+connect()
 //Handle any unhandled routes with a 404 error
 app.all("*", (req, res) => {
     res.status(404).json({
