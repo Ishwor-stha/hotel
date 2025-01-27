@@ -18,9 +18,10 @@ module.exports.createUser = async (req, res, next) => {
         const createUser=await connection.promise().query(query,[name,email,dob,gender,address,hashedPassword,phone])
         res.status(200).json({
              "status":true,
-             "messsage":name +"created sucessfully"   
+             "messsage":name +" created sucessfully"   
         })
     } catch (error) {
+        if(error.code==="ER_DUP_ENTRY") return next(new errorHandling(500,"Email address already used please try another."))
         return next(new errorHandling(500,error.message))
     }
 }
@@ -38,3 +39,4 @@ module.exports.createUser = async (req, res, next) => {
 //             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 //             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP 
 //         );
+

@@ -4,12 +4,15 @@ const dotenv=require("dotenv")
 const cookieParser=require("cookie-parser")
 const {connect}=require("./db")
 const adminRoute=require("./routes/adminRoute")
+const userRoute=require("./routes/userRoute")
 const errorController = require("./controller/errorController")
 dotenv.config()
 connect()
 app.use(express.json())
 app.use(cookieParser())
 app.use("/api/admin/",adminRoute)
+app.use("/api/user/",userRoute)
+
 
 
 //Handle any unhandled routes with a 404 error
