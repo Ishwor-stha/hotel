@@ -1,7 +1,9 @@
 const Router=require("express").Router()
-const {createUser}=require("../controller/userController")
+const {createUser,login}=require("../controller/userController")
 
 Router.route("/create-user").post(createUser)
+Router.route("/login").post(login)
+
 
 
 
