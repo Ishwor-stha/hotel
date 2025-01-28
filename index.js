@@ -6,11 +6,13 @@ const {connect}=require("./db")
 const adminRoute=require("./routes/adminRoute")
 const userRoute=require("./routes/userRoute")
 const errorController = require("./controller/errorController")
+const logout=require("./routes/logoutRoute")
 dotenv.config()
 app.use(express.json())
 app.use(cookieParser())
 app.use("/api/admin/",adminRoute)
 app.use("/api/user/",userRoute)
+app.use("/api/",logout)
 
 
 
