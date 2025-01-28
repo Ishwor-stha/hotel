@@ -11,18 +11,18 @@ const jwt = require("jsonwebtoken")
 module.exports.checkJwt = (req, res, next) => {
     try {
         const token = req.cookies.auth_token;
-        
+
 
         // no token
         if (!token) {
-            return next(new errorHandling(403,"Please login and try again." ));
+            return next(new errorHandling(403, "Please login and try again."));
 
         }
         // check token
         jwt.verify(token, process.env.jwt_secret_key, (err, decode) => {
             if (err) {
                 console.log(err)
-                return next(new errorHandling(403,"Your session has been expired.Please login again. "));
+                return next(new errorHandling(403, "Your session has been expired.Please login again. "));
             }
             req.user = decode;
 
@@ -32,6 +32,8 @@ module.exports.checkJwt = (req, res, next) => {
         return next(new errorHandling(500, error.message));
     }
 }
+
+
 // @desc:test route
 module.exports.getAll = async (req, res, next) => {
     try {
