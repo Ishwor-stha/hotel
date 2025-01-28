@@ -20,13 +20,13 @@ const { connection } = require("../db")
 
 // }
 
-module.exports.chooseHotel = (req, res, next) => {
+module.exports.chooseHotel = async(req, res, next) => {
     try {
         const { hotelName, checkIn, checkOut, roomNumber, guestNumber } = req.body
         if (!hotelName || !checkIn || !checkOut || !roomNumber || !guestNumber) return next(new errorHandling(400, "All fields are required."))
 
         const query = `SELECT * FROM hotels WHERE name=? `
-        const [check] = connection.promise().query(query, [hotelName])
+        const [check] = await connection.promise().query(query, [hotelName])
         if (check.length === 0) {
             return next(new errorHandling(404, "Cannot find the hotel with this name."))
 
@@ -47,12 +47,15 @@ module.exports.chooseHotel = (req, res, next) => {
     }
 }
 
-module.exports.chooseRoom = (req, res, next) => {
+module.exports.chooseRoom =async (req, res, next) => {
     try {
         if (!res.session.booking_data) return next(new errorHandling(400, "Please select the hotel first."))
         const { room_id } = req.body
         if(typeof room_id !=="number") return next(new errorHandling(400,"Invalid room details is given."))
         if (!room_id) return next(new errorHandling(400, "No room detail is given"))
+        const query = `SELECT * FROM rooms WHERE id=?`
+        const [checkRoom]=await connection.promise().query(query,[room_id])
+        if(checkRoom.length===0)return next(new errorHandling(404,"No room found on the database."))
         req.session.booking_data["room_id"] = room_id
         res.redirect("/payment")
 
@@ -73,3 +76,5 @@ module.exports.payment=(req,res,next)=>{
         
     }
 }
+
+// book hotel
