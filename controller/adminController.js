@@ -6,8 +6,6 @@ const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 
 
-
-
 // @method POST
 // @desc:controller to check the jwt 
 module.exports.checkJwt = (req, res, next) => {
@@ -115,7 +113,6 @@ module.exports.login = async (req, res, next) => {
         res.cookie("auth_token", token, {
             httpOnly: true,
             sameSite: "Strict",
-            maxAge: 3600 * 1000
         });
 
         // if password and username is valid then send the response
