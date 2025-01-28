@@ -7,9 +7,20 @@ const adminRoute=require("./routes/adminRoute")
 const userRoute=require("./routes/userRoute")
 const errorController = require("./controller/errorController")
 const logout=require("./routes/logoutRoute")
+const session=require("express-session")
 dotenv.config()
 app.use(express.json())
 app.use(cookieParser())
+app.use(session({
+    secret: process.env.secret,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: false,
+        maxAge: 1000 * 60 * 60,
+        httpOnly: true,
+    },
+}));
 app.use("/api/admin/",adminRoute)
 app.use("/api/user/",userRoute)
 app.use("/api/",logout)
