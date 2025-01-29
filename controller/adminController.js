@@ -38,6 +38,7 @@ module.exports.checkJwt = (req, res, next) => {
 module.exports.getAll = async (req, res, next) => {
     try {
         const query = `SELECT * FROM admin`
+        //console.log(req.originalUrl)
         let [data] = await connection.promise().query(query)
         res.status(200).json({
             "status": true,
