@@ -1,4 +1,5 @@
 const mysql = require("mysql2");
+const kleur=require("kleur")
 
 // Create a connection to the database
 const connection = mysql.createConnection({
@@ -13,10 +14,10 @@ const connection = mysql.createConnection({
 const connect = () => {
   connection.connect((err) => {
     if (err) {
-      console.error("Error connecting to the database:", err.stack);
+      console.error(kleur.red().bold(`Error connecting to the database: ${err.stack}`));
       return;
     }
-    console.log("Connected to the MySQL database");
+    console.log(kleur.green().bold("Connected to the MySQL database"));
   });
 }
 

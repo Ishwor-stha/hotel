@@ -1,6 +1,7 @@
 const express=require("express")
 const app=express()
 const dotenv=require("dotenv")
+const kleur=require("kleur")
 const cookieParser=require("cookie-parser")
 const {connect}=require("./db")
 const adminRoute=require("./routes/adminRoute")
@@ -40,7 +41,7 @@ app.use(errorController)
 
 const port=process.env.PORT ||4000
 app.listen(port,()=>{
-    console.log(`Server is listening on port ${port}.`)
+    console.log(kleur.blue().bold(`Server is listening on port ${port}.`))
 })
 
 
