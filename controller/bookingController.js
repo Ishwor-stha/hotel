@@ -93,29 +93,29 @@ module.exports.paymentDetails = (req, res, next) => {
     }
 }
 
-module.exports.book = async(req, res, next) => {
+module.exports.book = async (req, res, next) => {
     try {
         if (!req.session.booking_data) return next(new errorHandling(400, "Please fill out all the previous form."))
         if (req.session.booking_data["url"] !== "/api/user/details") return next(new errorHandling(400, "Please fill out the previous form."))
-        const firstName=req.session.booking_data["firstName"]
-        const lastName=req.session.booking_data["lastName"]
-        const email=req.session.booking_data["email"]
-        const mobile_phone=req.session.booking_data["mobile_phone"]
-        const remarks=req.session.booking_data["remarks"]
-        const title=req.session.booking_data["title"]
-        const country=req.session.booking_data["country"]
-        const address=req.session.booking_data["firstName"]
-        const city=req.session.booking_data["city"]
-        const zip=req.session.booking_data["zip"]
-        const phone=req.session.booking_data["phone"]
-        const dob=req.session.booking_data["dob"]
-        const arrival_time=req.session.booking_data["arrival_time"]
+        const firstName = req.session.booking_data["firstName"]
+        const lastName = req.session.booking_data["lastName"]
+        const email = req.session.booking_data["email"]
+        const mobile_phone = req.session.booking_data["mobile_phone"]
+        const remarks = req.session.booking_data["remarks"]
+        const title = req.session.booking_data["title"]
+        const country = req.session.booking_data["country"]
+        const address = req.session.booking_data["firstName"]
+        const city = req.session.booking_data["city"]
+        const zip = req.session.booking_data["zip"]
+        const phone = req.session.booking_data["phone"]
+        const dob = req.session.booking_data["dob"]
+        const arrival_time = req.session.booking_data["arrival_time"]
         const query = `INSERT INTO bookings (firstName,lastName,email,mobile_phone,remarks,title,country,address,city,zip,phone,dob,arrival_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`
-        const insertDetail =await connection.promise().query(query, [firstName,lastName,email,mobile_phone,remarks,title,country,address,city,zip,phone,dob,arrival_time])
+        const insertDetail = await connection.promise().query(query, [firstName, lastName, email, mobile_phone, remarks, title, country, address, city, zip, phone, dob, arrival_time])
 
 
     } catch (error) {
-        return next(new errorHandling(500,error.message))
+        return next(new errorHandling(500, error.message))
     }
 
 }
