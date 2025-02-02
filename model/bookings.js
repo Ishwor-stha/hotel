@@ -6,8 +6,8 @@ try {
         CREATE TABLE IF NOT EXISTS bookings (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT NOT NULL,
-             hotel_id INT NOT NULL,
-             check_in_date DATE NOT NULL,
+            hotel_id INT NOT NULL,
+            check_in_date DATE NOT NULL,
             check_out_date DATE NOT NULL,
             guests INT NOT NULL,
             total_price DECIMAL(10, 2) NOT NULL,
