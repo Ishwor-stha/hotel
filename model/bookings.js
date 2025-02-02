@@ -39,6 +39,5 @@ try {
     }
     createTable()
 } catch (error) {
-
     console.log(error)
 }
