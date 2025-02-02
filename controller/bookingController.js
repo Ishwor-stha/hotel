@@ -170,8 +170,8 @@ module.exports.book = async (req, res, next) => {
             tAmt: price, // Total amount
             pid: orderId, // Unique order ID
             scd: 'EPAYTEST', // Merchant code (use your Merchant ID in production)
-            su: 'http://localhost:3000/payment-success', // Success URL
-            fu: 'http://localhost:3000/payment-failure', // Failure URL
+            su: 'http://localhost:4000/payment-success', // Success URL
+            fu: 'http://localhost:4000/payment-failure', // Failure URL
         };
 
         // Redirect to eSewa payment page
