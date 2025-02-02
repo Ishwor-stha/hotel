@@ -7,7 +7,7 @@ try {
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT NOT NULL,
              hotel_id INT NOT NULL,
-            check_in_date DATE NOT NULL,
+             check_in_date DATE NOT NULL,
             check_out_date DATE NOT NULL,
             guests INT NOT NULL,
             total_price DECIMAL(10, 2) NOT NULL,
@@ -26,9 +26,10 @@ try {
             arrival_time TIME,
             number_of_room VARCHAR(50) NOT NULL,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-            FOREIGN KEY (hotel_id) REFERENCES hotels(id) ON DELETE CASCADE
+            FOREIGN KEY (hotel_id) REFERENCES hotels(id) ON DELETE CASCADE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
-
         
       `
         connection.query(query, (error, result) => {

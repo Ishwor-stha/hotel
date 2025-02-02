@@ -11,7 +11,9 @@ try {
             capacity INT NOT NULL,                   
             features TEXT,                           
             availability BOOLEAN DEFAULT TRUE,         
-            FOREIGN KEY (hotel_id) REFERENCES hotels(id) ON DELETE CASCADE
+            FOREIGN KEY (hotel_id) REFERENCES hotels(id) ON DELETE CASCADE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         );
       `
         connection.query(query, (error, result) => {
