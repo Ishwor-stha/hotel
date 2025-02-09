@@ -26,6 +26,8 @@ module.exports.createUser = async (req, res, next) => {
         return next(new errorHandling(500,error.message))
     }
 }
+
+
 module.exports.login = async (req, res, next) => {
     try {
         if(Object.keys(req.body).length>2)return next(new errorHandling(400,"Something went wrong.Please try again."))
