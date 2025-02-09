@@ -14,10 +14,10 @@ const connection = mysql.createConnection({
 const connect = () => {
   connection.connect((err) => {
     if (err) {
-      console.error(kleur.red().bold(`Error connecting to the database: ${err.stack}`));
+      console.error(kleur.red().italic(`Error connecting to the database: ${err.stack}`));
       return;
     }
-    console.log(kleur.green().bold("Connected to the MySQL database"));
+    console.log(kleur.green().italic("Connected to the MySQL database"));
   });
 }
 

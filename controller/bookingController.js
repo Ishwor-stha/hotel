@@ -35,8 +35,8 @@ module.exports.chooseHotel = async (req, res, next) => {
 module.exports.chooseRoom = async (req, res, next) => {
     try {
         if (!req.session.booking_data) return next(new errorHandling(400, "Please fil out the previous form."))
-        if (req.session.booking_data["url"] !== "/api/user/hotel") return next(new errorHandling(400, "Please fil out the previous form."))
-        const { room_id } = req.body
+        if (req.session.booking_data["url"] !== "/api/user/choose-hotel") return next(new errorHandling(400, "Please fil out the previous form."))
+        let { room_id } = req.body
         if (!room_id) return next(new errorHandling(400, "No room detail is given"))
         room_id = Number(room_id)
         if (isNaN(room_id)) return next(new errorHandling(400, "Invalid room details provided."));
@@ -61,11 +61,14 @@ module.exports.chooseRoom = async (req, res, next) => {
 module.exports.paymentDetails = (req, res, next) => {
     try {
         if (!req.session.booking_data) return next(new errorHandling(400, "Please fill out all the previous form."))
-        if (req.session.booking_data["url"] !== "/api/user/room") return next(new errorHandling(400, "Please fil out the previous form."))
+        if (req.session.booking_data["url"] !== "/api/user/choose-room") return next(new errorHandling(400, "Please fil out the previous form."))
         const possibleFields = ["firstName", "lastName", "email", "mobile_phone", "remarks", "title", "country", "address", "city", "zip", "phone", "dob", "arrivalTime"]
         if (!req.body.remarks) req.body["remarks"] = "."
-        const bodyLength = Object.keys(req.body).length
-        if (bodyLength !== 13) return next(new errorHandling(400, "All fields are required please fill out the form."))
+        const missingFields = possibleFields.filter(field => !req.body[field]);
+        if (missingFields.length > 0) {
+            return next(new errorHandling(400, `Missing fields: ${missingFields.join(", ")}`));
+        }
+
 
         for (const key in req.body) {
 
@@ -100,7 +103,7 @@ module.exports.book = async (req, res, next) => {
         if (!req.session.booking_data) {
             return next(new errorHandling(400, "Please fill out all the previous forms."));
         }
-        if (req.session.booking_data["url"] !== "/api/user/details") {
+        if (req.session.booking_data["url"] !== "/api/user/payment-details") {
             return next(new errorHandling(400, "Please fill out the previous form."));
         }
 
