@@ -1,13 +1,14 @@
 const crypto = require('crypto');
 const axios = require('axios');
 const path = require('path');
-const errorHandling=require("../utils/errorHandling")
+const errorHandling=require("../utils/errorHandling");
 
 
 
 
 module.exports.payWithEsewa=async (req, res,next) => {
-    if (!req.body) return errorHandling(400, "All data field is required")
+    if (!req.body) return errorHandling(400, "All data field is required");
+    if(!req.body.amount)return next(new errorHandling(400,"No amount is given.Please try again later."));
     try {
         
         const { amount, tax_amount = 0, product_service_charge = 0, product_delivery_charge = 0 } = req.body;
@@ -55,7 +56,7 @@ module.exports.payWithEsewa=async (req, res,next) => {
 
 module.exports.success=async (req, res,next) => {
     try {
-        if (!req.query.data) return next(new errorHandling(500, "Server error"))
+        if (!req.query.data) return next(new errorHandling(500, "Server error"));
         const encodedData = req.query.data;
         const decodedData = JSON.parse(Buffer.from(encodedData, "base64").toString("utf-8"));
         const keys=["total_amount","transaction_uuid","transaction_code","signed_field_names","status"]
