@@ -6,13 +6,13 @@ const errorHandling=require("../utils/errorHandling")
 
 
 
-module.exports.payWithEsewa=async (req, res) => {
-    if (!req.body) return errorMessage(res, "All data field is required")
+module.exports.payWithEsewa=async (req, res,next) => {
+    if (!req.body) return errorHandling(400, "All data field is required")
     try {
         
         const { amount, tax_amount = 0, product_service_charge = 0, product_delivery_charge = 0 } = req.body;
-        if (!amount) return errorMessage(res, "No amount is given.Please enter a amount")
-        if(amount<=0)return errorMessage(res, "Amount must be above 0.")
+        if (!amount) return next(new  errorHandling(400, "No amount is given.Please enter a amount") )
+        if(amount<=0)return next(new errorHandling(400, "Amount must be above 0."))
         const total_amount = parseFloat(amount) + parseFloat(tax_amount) + parseFloat(product_service_charge) + parseFloat(product_delivery_charge);
         const transaction_uuid = Date.now();
 	
@@ -48,24 +48,31 @@ module.exports.payWithEsewa=async (req, res) => {
 
 
     } catch (error) {
-	console.log(error)
-        return errorMessage(res, "server error", error.message)
+	   console.log(error)
+        return next(new errorHandling(500,"server error"))
     }
 }
 
-module.exports.success=async (req, res) => {
+module.exports.success=async (req, res,next) => {
     try {
-        if (!req.query.data) return errorMessage(res, "Server error")
+        if (!req.query.data) return next(new errorHandling(500, "Server error"))
         const encodedData = req.query.data;
         const decodedData = JSON.parse(Buffer.from(encodedData, "base64").toString("utf-8"));
+        const keys=["total_amount","transaction_uuid","transaction_code","signed_field_names","status"]
+        for(key in decodedData){
+            if (!keys.includes(key)){
+                return next(new errorHandling(500,"Server error"))
+            }
+        }
+
         const TotalAmt = decodedData.total_amount.replace(/,/g, '')//removing the comma from the amount for hashing the message ie (5,000)=>(5000)
         const message = `transaction_code=${decodedData.transaction_code},status=${decodedData.status},total_amount=${TotalAmt},
-        transaction_uuid=${decodedData.transaction_uuid},product_code=${PRODUCT_CODE},signed_field_names=${decodedData.signed_field_names}`;
+        transaction_uuid=${decodedData.transaction_uuid},product_code=${process.env.PRODUCT_CODE},signed_field_names=${decodedData.signed_field_names}`;
 
         const hash = crypto.createHmac("sha256", SECRET_KEY).update(message).digest("base64");
 
         if (hash !== decodedData.signature) {
-            return errorMessage(res, "Invalid signature")
+            return next(new errorHandling(400, "Invalid signature"))
         }
 
         const response = await axios.get(process.env.STATUS_CHECK, {
@@ -82,10 +89,10 @@ module.exports.success=async (req, res) => {
         
         const { status, transaction_uuid, total_amount } = response.data;
         if (status !== "COMPLETE" || transaction_uuid !== decodedData.transaction_uuid || Number(total_amount) !== Number(TotalAmt)) {
-            return errorMessage(res, "Invalid transaction details")
+            return next (new errorHandling(400,"Invalid transaction details"))
 
         }
-        return res.sendFile(path.join(__dirname, 'public', 'sucess.html'));
+        return res.sendFile(path.join(__dirname, '..','public', 'sucess.html'));
 
         // console.log(response.data)
         // return res.status(200).json({
@@ -99,18 +106,23 @@ module.exports.success=async (req, res) => {
         //     }
         // });
     } catch (error) {
-        return errorMessage(res, "Server error", error.message)
+        return next(new errorHandling(500, "Server error"))
     }
 }
 
-module.exports.failure=(req,res)=>{
+module.exports.failure=(req,res,next)=>{
+    try{
 
-    return res.sendFile(path.join(__dirname, 'public', 'failed.html'));
+        return res.sendFile(path.join(__dirname,'..', 'public', 'failed.html'));
+        // res.status(500).json({
+        //     status: false,
+        //     message: 'Transaction failed.Please try again later.',
+        // });
+    }catch(error){
+        return next(new errorHandling(500,error.message))
+    }
 
-    // res.status(500).json({
-    //     status: false,
-    //     message: 'Transaction failed.Please try again later.',
-    // });
+
 
 
 }
