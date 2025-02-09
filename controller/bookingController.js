@@ -161,32 +161,7 @@ module.exports.book = async (req, res, next) => {
             price,
         ]);
 
-        // Generate a unique order ID for payment
-        const orderId = `ORDER_${insertDetail.insertId}`;
-
-        // Redirect to eSewa payment page
-        const paymentData = {
-            amt: price, // Amount to be paid
-            psc: 0, // Service charge
-            pdc: 0, // Delivery charge
-            txAmt: 0, // Tax amount
-            tAmt: price, // Total amount
-            pid: orderId, // Unique order ID
-            scd: 'EPAYTEST', // Merchant code (use your Merchant ID in production)
-            su: 'http://localhost:4000/payment-success', // Success URL
-            fu: 'http://localhost:4000/payment-failure', // Failure URL
-        };
-
-        // Redirect to eSewa payment page
-        res.send(`
-            <form action="https://uat.esewa.com.np/epay/main" method="POST">
-                ${Object.entries(paymentData)
-                .map(([key, value]) => `<input type="hidden" name="${key}" value="${value}">`)
-                .join('')}
-                <input type="submit" value="Pay with eSewa">
-            </form>
-            <script>document.forms[0].submit();</script>
-        `);
+       
 
     } catch (error) {
         return next(new errorHandling(500, error.message));
