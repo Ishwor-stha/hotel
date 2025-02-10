@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const axios = require('axios');
 const path = require('path');
+const {connection}=require("../db")
 const errorHandling=require("../utils/errorHandling");
 
 
@@ -88,12 +89,19 @@ module.exports.success=async (req, res,next) => {
             }
         });
         
-        const { status, transaction_uuid, total_amount } = response.data;
+        const { status, transaction_uuid, total_amount,transaction_code } = response.data;
         if (status !== "COMPLETE" || transaction_uuid !== decodedData.transaction_uuid || Number(total_amount) !== Number(TotalAmt)) {
             return next (new errorHandling(400,"Invalid transaction details"))
 
         }
-        
+        const data={
+            status:status,
+            transaction_uuid:transaction_uuid,
+            total_amount:total_amount,
+            transactionCode:transaction_code
+        }
+        insertDetaisToDatabase(req.session,data)
+
         return res.sendFile(path.join(__dirname, '..','public', 'sucess.html'));
 
         // console.log(response.data)
@@ -124,6 +132,55 @@ module.exports.failure=(req,res,next)=>{
         return next(new errorHandling(500,error.message));
     }
 
+
+
+
+}
+
+
+
+
+const insertDetaisToDatabase=async(session,data)=>{
+
+    const {
+            room_id,
+            firstName,
+            lastName,
+            email,
+            mobile_phone,
+            remarks,
+            title,
+            country,
+            address,
+            city,
+            zip,
+            phone,
+            dob,
+            arrival_time,
+            room_number,
+        } = req.session.booking_data;
+   const bookingQuery = `
+            INSERT INTO bookings 
+            (firstName, lastName, email, mobile_phone, remarks, title, country, address, city, zip, phone, dob, arrival_time, room_id, price) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+    const [insertDetail] = await connection.promise().query(bookingQuery, [
+            firstName,
+            lastName,
+            email,
+            mobile_phone,
+            remarks,
+            title,
+            country,
+            address,
+            city,
+            zip,
+            phone,
+            dob,
+            arrival_time,
+            room_id,
+            price,
+        ]);
 
 
 
