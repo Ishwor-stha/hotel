@@ -49,6 +49,7 @@ module.exports.chooseRoom = async (req, res, next) => {
         res.status(200).json({
             "status": true,
             "message": "ok"
+
         })
 
     } catch (error) {
@@ -141,50 +142,3 @@ module.exports.book = async (req, res, next) => {
         return next(new errorHandling(500, error.message));
     }
 };
-
-
-const insertDetaisToDatabase=async(req,price)=>{
-
-    const {
-            room_id,
-            firstName,
-            lastName,
-            email,
-            mobile_phone,
-            remarks,
-            title,
-            country,
-            address,
-            city,
-            zip,
-            phone,
-            dob,
-            arrival_time,
-            room_number,
-        } = req.session.booking_data;
-   const bookingQuery = `
-            INSERT INTO bookings 
-            (firstName, lastName, email, mobile_phone, remarks, title, country, address, city, zip, phone, dob, arrival_time, room_id, price) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
-        const [insertDetail] = await connection.promise().query(bookingQuery, [
-            firstName,
-            lastName,
-            email,
-            mobile_phone,
-            remarks,
-            title,
-            country,
-            address,
-            city,
-            zip,
-            phone,
-            dob,
-            arrival_time,
-            room_id,
-            price,
-        ]);
-console.log(Date);
-
-
-}

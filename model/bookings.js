@@ -1,4 +1,4 @@
-const { connection } = require("../db")
+const { connection } = require("../db");
 
 try {
     const createTable = () => {
@@ -25,20 +25,25 @@ try {
             dob DATE,
             arrival_time TIME,
             number_of_room VARCHAR(50) NOT NULL,
+            transaction_status VARCHAR(50) NOT NULL,      
+            transaction_uuid VARCHAR(255) NOT NULL,       
+            transaction_code VARCHAR(255) NOT NULL,       
+            total_amount DECIMAL(10, 2) NOT NULL,         
+            
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
             FOREIGN KEY (hotel_id) REFERENCES hotels(id) ON DELETE CASCADE,
+            
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    );
-        
-      `
-        connection.query(query, (error, result) => {
-            if (error) return console.log("Cannot create a table.\n" + error)
-            console.log(result)
-        })
+        );
+      `;
 
+        connection.query(query, (error, result) => {
+            if (error) return console.log("Cannot create a table.\n" + error);
+            console.log(result);
+        });
     }
-    createTable()
+    createTable();
 } catch (error) {
-    console.log(error)
+    console.log(error);
 }

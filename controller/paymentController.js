@@ -100,7 +100,7 @@ module.exports.success=async (req, res,next) => {
             total_amount:total_amount,
             transactionCode:transaction_code
         }
-        insertDetaisToDatabase(req.session,data)
+        await insertDetaisToDatabase(req.session,data)
 
         return res.sendFile(path.join(__dirname, '..','public', 'sucess.html'));
 
@@ -138,50 +138,52 @@ module.exports.failure=(req,res,next)=>{
 }
 
 
-
-
-const insertDetaisToDatabase=async(session,data)=>{
-
+const insertDetaisToDatabase = async (session, data) => {
     const {
-            room_id,
-            firstName,
-            lastName,
-            email,
-            mobile_phone,
-            remarks,
-            title,
-            country,
-            address,
-            city,
-            zip,
-            phone,
-            dob,
-            arrival_time,
-            room_number,
-        } = req.session.booking_data;
-   const bookingQuery = `
-            INSERT INTO bookings 
-            (firstName, lastName, email, mobile_phone, remarks, title, country, address, city, zip, phone, dob, arrival_time, room_id, price) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
+        room_id,
+        firstName,
+        lastName,
+        email,
+        mobile_phone,
+        remarks,
+        title,
+        country,
+        address,
+        city,
+        zip,
+        phone,
+        dob,
+        arrival_time,
+        room_number,
+    } = session.booking_data;
+
+
+    const { status, transaction_uuid, total_amount, transactionCode } = data;
+
+    const bookingQuery = `
+        INSERT INTO bookings 
+        (firstName, lastName, email, mobile_phone, remarks, title, country, address, city, zip, phone, dob, arrival_time, room_id, price, transaction_status, transaction_uuid, transaction_code, total_amount) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    
     const [insertDetail] = await connection.promise().query(bookingQuery, [
-            firstName,
-            lastName,
-            email,
-            mobile_phone,
-            remarks,
-            title,
-            country,
-            address,
-            city,
-            zip,
-            phone,
-            dob,
-            arrival_time,
-            room_id,
-            price,
-        ]);
-
-
-
+        firstName,
+        lastName,
+        email,
+        mobile_phone,
+        remarks,
+        title,
+        country,
+        address,
+        city,
+        zip,
+        phone,
+        dob,
+        arrival_time,
+        room_id,
+        status,
+        transaction_uuid, 
+        transactionCode, 
+        total_amount 
+    ]);
 }
