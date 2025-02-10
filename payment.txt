@@ -1,78 +1,40 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const axios = require('axios');
-
-const app = express();
-const PORT = 3000;
-
-// Middleware
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
-// Routes
-app.get('/', (req, res) => {
-  res.send('Welcome to eSewa Integration');
-});
-
-app.post('/initiate-payment', (req, res) => {
-  const { amount, orderId } = req.body;
-
-  const paymentData = {
-    amt: amount,
-    psc: 0,
-    pdc: 0,
-    txAmt: 0,
-    tAmt: amount,
-    pid: orderId,
-    scd: 'EPAYTEST',
-    su: 'http://localhost:3000/payment-success',
-    fu: 'http://localhost:3000/payment-failure',
-  };
-
-  res.send(`
-    <form action="https://uat.esewa.com.np/epay/main" method="POST">
-      ${Object.entries(paymentData)
-        .map(([key, value]) => `<input type="hidden" name="${key}" value="${value}">`)
-        .join('')}
-      <input type="submit" value="Pay with eSewa">
-    </form>
-    <script>document.forms[0].submit();</script>
-  `);
-});
-
-app.get('/payment-success', async (req, res) => {
-  const { oid, amt, refId } = req.query;
-
-  try {
-    const verificationUrl = 'https://uat.esewa.com.np/epay/transrec';
-    const verificationData = {
-      amt: amt,
-      rid: refId,
-      pid: oid,
-      scd: 'EPAYTEST',
-    };
-
-    const response = await axios.post(verificationUrl, verificationData, {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    });
-
-    if (response.data.includes('Success')) {
-      res.send('Payment successful!');
-      // Update your database here
-    } else {
-      res.send('Payment verification failed.');
-    }
-  } catch (error) {
-    console.error('Error verifying payment:', error);
-    res.status(500).send('Payment verification error.');
-  }
-});
-
-app.get('/payment-failure', (req, res) => {
-  res.send('Payment failed. Please try again.');
-});
-
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+   
+const {
+            room_id,
+            firstName,
+            lastName,
+            email,
+            mobile_phone,
+            remarks,
+            title,
+            country,
+            address,
+            city,
+            zip,
+            phone,
+            dob,
+            arrival_time,
+            room_number,
+        } = req.session.booking_data;
+   const bookingQuery = `
+            INSERT INTO bookings 
+            (firstName, lastName, email, mobile_phone, remarks, title, country, address, city, zip, phone, dob, arrival_time, room_id, price) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+        const [insertDetail] = await connection.promise().query(bookingQuery, [
+            firstName,
+            lastName,
+            email,
+            mobile_phone,
+            remarks,
+            title,
+            country,
+            address,
+            city,
+            zip,
+            phone,
+            dob,
+            arrival_time,
+            room_id,
+            price,
+        ]);

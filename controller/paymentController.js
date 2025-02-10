@@ -93,6 +93,7 @@ module.exports.success=async (req, res,next) => {
             return next (new errorHandling(400,"Invalid transaction details"))
 
         }
+        
         return res.sendFile(path.join(__dirname, '..','public', 'sucess.html'));
 
         // console.log(response.data)
