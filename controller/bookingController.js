@@ -3,14 +3,23 @@ const { connection } = require("../db")
 const { validateEmail } = require("../utils/emailValidator")
 const { isValidNepaliPhoneNumber } = require("../utils/phNoValidation")
 const axios=require("axios");
+const moment=require("moment")
+
+
+const calculateNights = (checkIn, checkOut) => {
+    return moment(checkOut, "YYYY-MM-DD").diff(moment(checkIn, "YYYY-MM-DD"), "days");
+};
+
+
 
 module.exports.chooseHotel = async (req, res, next) => {
     try {
-        const { hotelName, checkIn, checkOut, roomNumber, guestNumber, hotelId } = req.body
+        // roomNumber is the total number of room that guest has selected or enterd
+        const { hotelName, checkIn, checkOut, roomNumber, guestNumber, hotelId } = req.body;
         if (!hotelName || !checkIn || !checkOut || !roomNumber || !guestNumber || !hotelId) return next(new errorHandling(400, "All fields are required."))
 
-        const query = `SELECT * FROM hotels WHERE name=? `
-        const [check] = await connection.promise().query(query, [hotelName])
+        const query = `SELECT * FROM hotels WHERE id=? `//previous name=?
+        const [check] = await connection.promise().query(query, [hotelId])//previous [hotelName]
         if (check.length === 0) {
             return next(new errorHandling(404, "Cannot find the hotel with this name."))
 
@@ -32,6 +41,7 @@ module.exports.chooseHotel = async (req, res, next) => {
     }
 }
 
+
 module.exports.chooseRoom = async (req, res, next) => {
     try {
         if (!req.session.booking_data) return next(new errorHandling(400, "Please fil out the previous form."))
@@ -43,7 +53,7 @@ module.exports.chooseRoom = async (req, res, next) => {
         const query = `SELECT * FROM rooms WHERE id=?`
         const [checkRoom] = await connection.promise().query(query, [room_id])
         if (checkRoom.length === 0) return next(new errorHandling(404, "No room found on the database."))
-        req.session.booking_data["room_id"] = room_id
+        req.session.booking_data["rocom_id"] = room_id
         req.session.booking_data["url"] = req.originalUrl
 
         res.status(200).json({
@@ -57,6 +67,7 @@ module.exports.chooseRoom = async (req, res, next) => {
 
     }
 }
+
 
 
 module.exports.paymentDetails = (req, res, next) => {
@@ -98,6 +109,7 @@ module.exports.paymentDetails = (req, res, next) => {
     }
 }
 
+
 module.exports.book = async (req, res, next) => {
     try {
         // Validate session data
@@ -109,7 +121,7 @@ module.exports.book = async (req, res, next) => {
         }
 
         // Extract booking data from session
-        const {room_id,room_number} = req.session.booking_data;
+        const {room_id,room_number, check_in,check_out} = req.session.booking_data;
 
         // Fetch room details from the database
         const roomQuery = `SELECT * FROM rooms WHERE id = ?`;
@@ -120,10 +132,12 @@ module.exports.book = async (req, res, next) => {
         }
 
         // Calculate total price
-        const price = searchRoom[0].price * room_number;
+        const night=calculateNights(check_in,check_out)
+        const price = (searchRoom[0].price * room_number)*Number(night);
 
        
-         const response = await axios.post(process.env.PaymentUrl, 
+        try{
+             const response = await axios.post(process.env.PaymentUrl, 
                 { 
                     amount: price
                 }, 
@@ -133,10 +147,10 @@ module.exports.book = async (req, res, next) => {
                     "Content-Type": "application/json"
                     }
                 }
-            );
-
-
-       
+            );   
+         }catch(error){
+            return next(new errorHandling(500,"Error while processing payment"))
+         }    
 
     } catch (error) {
         return next(new errorHandling(500, error.message));
