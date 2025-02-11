@@ -26,7 +26,7 @@ module.exports.payWithEsewa=async (req, res,next) => {
             total_amount: parseFloat(total_amount),
             product_service_charge: parseFloat(product_service_charge),
             product_delivery_charge: parseFloat(product_delivery_charge),
-            transaction_uuid,
+            transaction_uuid:transaction_uuid,
             product_code:process.env.PRODUCT_CODE,
             success_url: process.env.SUCCESS_URL,
             failure_url:process.env.FAILURE_URL,
@@ -104,17 +104,7 @@ module.exports.success=async (req, res,next) => {
 
         return res.sendFile(path.join(__dirname, '..','public', 'sucess.html'));
 
-        // console.log(response.data)
-        // return res.status(200).json({
-        //     status: true,
-        //     message: "Success",
-        //     transaction_details: {
-        //         status: response.data.status,
-        //         ref_id: response.data.ref_id,
-        //         amount: response.data.total_amount
-
-        //     }
-        // });
+        
     } catch (error) {
         return next(new errorHandling(500, "Server error"));
     }
@@ -137,7 +127,6 @@ module.exports.failure=(req,res,next)=>{
 
 }
 
-
 const insertDetaisToDatabase = async (session, data) => {
     const {
         room_id,
@@ -157,13 +146,12 @@ const insertDetaisToDatabase = async (session, data) => {
         room_number,
     } = session.booking_data;
 
-
     const { status, transaction_uuid, total_amount, transactionCode } = data;
 
     const bookingQuery = `
         INSERT INTO bookings 
-        (firstName, lastName, email, mobile_phone, remarks, title, country, address, city, zip, phone, dob, arrival_time, room_id, price, transaction_status, transaction_uuid, transaction_code, total_amount) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (firstName, lastName, email, mobile_phone, remarks, title, country, address, city, zip, phone, dob, arrival_time, room_id, number_of_room, transaction_status, transaction_uuid, transaction_code, total_amount) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     
     const [insertDetail] = await connection.promise().query(bookingQuery, [
@@ -181,9 +169,11 @@ const insertDetaisToDatabase = async (session, data) => {
         dob,
         arrival_time,
         room_id,
+        room_number, 
         status,
         transaction_uuid, 
         transactionCode, 
         total_amount 
     ]);
 }
+
