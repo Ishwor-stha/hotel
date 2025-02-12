@@ -1,6 +1,6 @@
 const express = require("express");
 const Router = express.Router();
-const { chooseHotel, chooseRoom, paymentDetails, book } = require("../controller/bookingController");
+const { chooseHotel, chooseRoom , book } = require("../controller/bookingController");
 
 
 Router.route("/choose-hotel").post(chooseHotel);

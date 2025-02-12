@@ -35,7 +35,7 @@ module.exports.chooseHotel = async (req, res, next) => {
             check_out: checkOut,
             room_number: roomNumber,
             guest_number: guestNumber,
-            user_id:req.user.id
+            user_id:req.user.id,
             url: req.originalUrl
         };
         res.status(200).json({
