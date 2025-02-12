@@ -2,11 +2,14 @@ const { connection } = require("../db");
 
 const createTable = () => {
     const query = `
-        CREATE TABLE IF NOT EXISTS booking_rooms (
+        CREATE TABLE IF NOT EXISTS bookingRooms (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            booking_id INT NOT NULL,
+            bookingId INT NOT NULL,
+            userId INT NOT NULL,
             room_id INT NOT NULL,
-            FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
+
+            FOREIGN KEY (bookingId) REFERENCES bookings(id) ON DELETE CASCADE,
+            FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
             FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
