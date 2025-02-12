@@ -34,7 +34,10 @@ module.exports.chooseHotel = async (req, res, next) => {
             url: req.originalUrl
         }
 
-
+        res.status(200).json({
+            status:true,
+            message:"Hotel choosed successfully"
+        })
 
     } catch (error) {
         return next(new errorHandling(500, error.message))
