@@ -23,7 +23,7 @@ module.exports.createUser = async (req, res, next) => {
             password,
             phone,
             confirmPassword
-        } = req.body
+        } = req.body;
         if (!name || !email || !dob || !gender || !address || !password || !phone || !confirmPassword) return next(new errorHandling(400, "All fields are required please fill out all the informatiion."))
         if (!validateEmail(email)) return next(new errorHandling(400, "Please enter valid email address"))
         if (!isValidNepaliPhoneNumber(phone)) return next(new errorHandling(400, "Please enter valid phone number."))

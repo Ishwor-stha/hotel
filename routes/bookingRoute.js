@@ -5,7 +5,7 @@ const { chooseHotel, chooseRoom, paymentDetails, book } = require("../controller
 
 Router.route("/choose-hotel").post(chooseHotel);
 Router.route("/choose-room").post(chooseRoom);
-Router.route("/payment-details").post(paymentDetails);
+// Router.route("/payment-details").post(paymentDetails);
 Router.route("/book").post(book);
 
 module.exports = Router;

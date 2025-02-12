@@ -10,13 +10,18 @@ try {
             dob DATE NOT NULL,                         
             gender ENUM('male', 'female', 'other') NOT NULL, 
             address TEXT NOT NULL,
+            country VARCHAR(255) NOT NULL,
+            city VARCHAR(100) NOT NULL,
+            zip VARCHAR(20) NOT NULL,
             password VARCHAR(255) NOT NULL,           
             phone VARCHAR(15) NOT NULL,  
+            phone2 VARCHAR(15) NOT NULL,  
+            
             role ENUM('user', 'admin') DEFAULT 'user', 
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP 
         );
-        `
+        `;
         connection.query(query, (error, result) => {
             if (error) return console.log("Cannot create a table.\n" + error);
             console.log(result);

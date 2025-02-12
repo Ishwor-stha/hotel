@@ -17,14 +17,13 @@ module.exports.chooseHotel = async (req, res, next) => {
     try {
         // roomNumber is the total number of room that guest has selected or enterd
         const {
-            hotelName,
             checkIn,
             checkOut,
             roomNumber,
             guestNumber,
             hotelId
         } = req.body;
-        if (!hotelName || !checkIn || !checkOut || !roomNumber || !guestNumber || !hotelId) return next(new errorHandling(400, "All fields are required."));
+        if (!checkIn || !checkOut || !roomNumber || !guestNumber || !hotelId) return next(new errorHandling(400, "All fields are required."));
         const query = `SELECT * FROM hotels WHERE id=? ` //previous name=?
         const [check] = await connection.promise().query(query, [hotelId]); //previous [hotelName]
         if (check.length === 0) {
@@ -32,11 +31,11 @@ module.exports.chooseHotel = async (req, res, next) => {
         }
         req.session.booking_data = {
             hotel_id: hotelId,
-            hotel_name: hotelName,
             check_in: checkIn,
             check_out: checkOut,
             room_number: roomNumber,
             guest_number: guestNumber,
+            user_id:req.user.id
             url: req.originalUrl
         };
         res.status(200).json({
@@ -49,18 +48,18 @@ module.exports.chooseHotel = async (req, res, next) => {
 }
 module.exports.chooseRoom = async (req, res, next) => {
     try {
-        if (!req.session.booking_data) return next(new errorHandling(400, "Please fil out the previous form."));
+        if (!req.session.booking_data) return next(new errorHandling(400, "Please fill out the previous form."));
         if (req.session.booking_data["url"] !== "/api/user/choose-hotel") return next(new errorHandling(400, "Please fil out the previous form."));
         let {
             room_id
-        } = req.body;;
+        } = req.body;
         if (!room_id) return next(new errorHandling(400, "No room detail is given"));
         room_id = Number(room_id);
         if (isNaN(room_id)) return next(new errorHandling(400, "Invalid room details provided."));
         const query = `SELECT * FROM rooms WHERE id=?`;
         const [checkRoom] = await connection.promise().query(query, [room_id]);
         if (checkRoom.length === 0) return next(new errorHandling(404, "No room found on the database."));
-        req.session.booking_data["rocom_id"] = room_id;
+        req.session.booking_data["room_id"] = room_id;
         req.session.booking_data["url"] = req.originalUrl;
         res.status(200).json({
             "status": true,
@@ -70,40 +69,34 @@ module.exports.chooseRoom = async (req, res, next) => {
         return next(new errorHandling(500, error.message));
     }
 }
-module.exports.paymentDetails = (req, res, next) => {
-    try {
-        if (!req.session.booking_data) return next(new errorHandling(400, "Please fill out all the previous form."));
-        if (req.session.booking_data["url"] !== "/api/user/choose-room") return next(new errorHandling(400, "Please fil out the previous form."));
-        const possibleFields = ["firstName", "lastName", "email", "mobile_phone", "remarks", "title", "country", "address", "city", "zip", "phone", "dob", "arrivalTime"];
-        if (!req.body.remarks) req.body["remarks"] = ".";
-        const missingFields = possibleFields.filter(field => !req.body[field]);
-        if (missingFields.length > 0) {
-            return next(new errorHandling(400, `Missing fields: ${missingFields.join(", ")}`));
-        }
-        for (const key in req.body) {
-            if (key === "email") {
-                if (!validateEmail(req.body[key])) return next(new errorHandling(400, "Please enter valid email."));
-            }
-            if (key === "phone" || key == "mobile_phone") {
-                if (!isValidNepaliPhoneNumber(req.body["phone"]) || !isValidNepaliPhoneNumber(req.body["mobile_phone"])) return next(new errorHandling(400, "Please enter valid phone number."));
-            }
-            req.session.booking_data[key] = req.body[key];
-        }
-        if (req.body.middleName) {
-            req.session.booking_data["middleName"] = req.body.middleName;
-        } else {
-            req.session.booking_data["middleName"] = " ";
-        }
-        req.session.booking_data["userId"] = req.user.id;
-        req.session.booking_data["url"] = req.originalUrl;
-        res.status(200).json({
-            "status": true,
-            "message": "Payment details saved successfully."
-        });
-    } catch (error) {
-        return next(new errorHandling(500, error.message));
-    }
-}
+// module.exports.paymentDetails = (req, res, next) => {
+//     try {
+//         if (!req.session.booking_data) return next(new errorHandling(400, "Please fill out all the previous form."));
+//         if (req.session.booking_data["url"] !== "/api/user/choose-room") return next(new errorHandling(400, "Please fil out the previous form."));
+//         const missingFields = possibleFields.filter(field => !req.body[field]);
+//         if (missingFields.length > 0) {
+//             return next(new errorHandling(400, `Missing fields: ${missingFields.join(", ")}`));
+//         }
+//         for (const key in req.body) {
+//             if (key === "email") {
+//                 if (!validateEmail(req.body[key])) return next(new errorHandling(400, "Please enter valid email."));
+//             }
+//             if (key === "phone" || key == "mobile_phone") {
+//                 if (!isValidNepaliPhoneNumber(req.body["phone"]) || !isValidNepaliPhoneNumber(req.body["mobile_phone"])) return next(new errorHandling(400, "Please enter valid phone number."));
+//             }
+//             req.session.booking_data[key] = req.body[key];
+//         }
+        
+//         req.session.booking_data["userId"] = req.user.id;//from check jwt
+//         req.session.booking_data["url"] = req.originalUrl;
+//         res.status(200).json({
+//             "status": true,
+//             "message": "Payment details saved successfully."
+//         });
+//     } catch (error) {
+//         return next(new errorHandling(500, error.message));
+//     }
+// }
 module.exports.book = async (req, res, next) => {
     try {
         // Validate session data

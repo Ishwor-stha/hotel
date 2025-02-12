@@ -5,6 +5,9 @@ const {
     connection
 } = require("../db")
 const errorHandling = require("../utils/errorHandling");
+
+
+
 module.exports.payWithEsewa = async (req, res, next) => {
     if (!req.body) return errorHandling(400, "All data field is required");
     if (!req.body.amount) return next(new errorHandling(400, "No amount is given.Please try again later."));
@@ -48,6 +51,8 @@ module.exports.payWithEsewa = async (req, res, next) => {
         return next(new errorHandling(500, "server error"));
     }
 }
+
+
 module.exports.success = async (req, res, next) => {
     try {
         if (!req.query.data) return next(new errorHandling(500, "Server error"));
@@ -98,6 +103,8 @@ module.exports.success = async (req, res, next) => {
         return next(new errorHandling(500, "Server error"));
     }
 }
+
+
 module.exports.failure = (req, res, next) => {
     try {
         return res.sendFile(path.join(__dirname, '..', 'public', 'failed.html'));
@@ -112,60 +119,42 @@ module.exports.failure = (req, res, next) => {
 const insertDetaisToDatabase = async (session, data) => {
     const {
         room_id,
-        firstName,
-        lastName,
-        middleName,
-        email,
-        mobile_phone,
-        remarks,
-        title,
-        country,
-        address,
-        city,
-        zip,
-        phone,
-        dob,
+        hotel_id,
+        user_id,
         arrival_time,
         room_number,
+        guest_number,
         check_in,
         check_out
     } = session.booking_data;
+
     const {
         status,
         transaction_uuid,
-        total_amount,
+        total_price,
         transactionCode
     } = data;
+
     const bookingQuery = `
         INSERT INTO bookings 
-        (user_id,hotel_id,firstName,middleName, lastName, email, mobile_phone, remarks, title, country, address, city, zip, phone, dob, arrival_time, room_id, number_of_room, transaction_status, transaction_uuid, transaction_code, total_amount,check_in_date,check_out_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)
+        (user_id, hotel_id, room_id, arrival_time, number_of_room, guests, check_in_date, check_out_date, transaction_status, transaction_uuid, transaction_code, total_price) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `;
+
     const [insertDetail] = await connection.promise().query(bookingQuery, [
         user_id,
         hotel_id,
-        firstName,
-        middleName,
-        lastName,
-        email,
-        mobile_phone,
-        remarks,
-        title,
-        country,
-        address,
-        city,
-        zip,
-        phone,
-        dob,
-        arrival_time,
         room_id,
+        arrival_time,
         room_number,
+        guest_number,
+        check_in,
+        check_out,
         status,
         transaction_uuid,
         transactionCode,
-        total_amount,
-        check_in,
-        check_out
+        total_price
     ]);
-    const fetchQuery = `SELECT * FORM  bookings  WHERE check_in_date=? and user_id=?`
-    const fetchBookingData =
-}
+
+    
+};
