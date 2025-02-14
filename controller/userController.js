@@ -10,36 +10,66 @@ const {
 } = require("../utils/phNoValidation")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
+
 module.exports.createUser = async (req, res, next) => {
     try {
         if (!req.body) return next(new errorHandling("Empty body: Ensure you're sending the correct information.", 400));
+        const possibleFields = ["firstName", "lastName", "email", "dob", "country", "gender", "city", "zip", "address", "password", "phone2", "phone", "confirmPassword"];
+        
+        for (const key in req.body) {
+            if (!possibleFields.includes(key)) {
+                return next(new errorHandling("All fields are required, please fill up the form", 400));
+            }
+        }
+        
         // list all possible keys
         const {
-            name,
+            firstName,
+            middleName,
+            lastName,
             email,
             dob,
+            country,
             gender,
+            city,
+            zip,
             address,
             password,
+            phone2,
             phone,
             confirmPassword
         } = req.body;
-        if (!name || !email || !dob || !gender || !address || !password || !phone || !confirmPassword) return next(new errorHandling(400, "All fields are required please fill out all the informatiion."))
-        if (!validateEmail(email)) return next(new errorHandling(400, "Please enter valid email address"))
-        if (!isValidNepaliPhoneNumber(phone)) return next(new errorHandling(400, "Please enter valid phone number."))
-        if (password !== confirmPassword) return next(new errorHandling(400, "Password and confirm password doesnot match"))
-        const hashedPassword = bcrypt.hashSync(password)
-        const query = `INSERT INTO users (name,email,dob,gender,address,password,phone) VALUES (?,?,?,?,?,?,?)`
-        const createUser = await connection.promise().query(query, [name, email, dob, gender, address, hashedPassword, phone])
+        
+        let fullName;
+        if (!middleName) {
+            fullName = `${firstName} ${lastName}`;
+        } else {
+            fullName = `${firstName} ${middleName} ${lastName}`;
+        }
+
+        if (!validateEmail(email)) return next(new errorHandling(400,"Please enter a valid email address"));
+
+        if (!isValidNepaliPhoneNumber(phone)) return next(new errorHandling(400,"Please enter a valid phone number."));
+
+        if (!isValidNepaliPhoneNumber(phone2)) return next(new errorHandling(400,"Please enter a valid phone number."));
+
+        if (password !== confirmPassword) return next(new errorHandling(400,"Password and confirm password do not match"));
+        
+        const hashedPassword = bcrypt.hashSync(password);
+        const query = `INSERT INTO users (name, email, dob, gender, address, password, phone, phone2, country, city, zip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        const createUser = await connection.promise().query(query, [fullName, email, dob, gender, address, hashedPassword, phone, phone2, country, city, zip]);
+        
         res.status(200).json({
             "status": true,
-            "messsage": name + " created sucessfully"
-        })
+            "message": fullName + " created successfully"
+        });
     } catch (error) {
-        if (error.code === "ER_DUP_ENTRY") return next(new errorHandling(500, "Email address already used please try another."))
-        return next(new errorHandling(500, error.message))
+        if (error.code === "ER_DUP_ENTRY") return next(new errorHandling(500"Email address already used, please try another."));
+        return next(new errorHandling(500,error.message));
     }
 }
+
+
 module.exports.login = async (req, res, next) => {
     try {
         if (Object.keys(req.body).length > 2) return next(new errorHandling(400, "Something went wrong.Please try again."))
