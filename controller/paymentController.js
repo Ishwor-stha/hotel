@@ -123,6 +123,7 @@ module.exports.failure = (req, res, next) => {
         return next(new errorHandling(500, error.message));
     }
 }
+// function to insert booking details to the database
 const insertDetaisToDatabase = async (session, data) => {
     const {
         room_id,

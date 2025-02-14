@@ -1,15 +1,16 @@
-const errorHandling = require("../utils/errorHandling")
+const errorHandling = require("../utils/errorHandling");
 const {
     connection
-} = require("../db")
+} = require("../db");
 const {
     validateEmail
-} = require("../utils/emailValidator")
+} = require("../utils/emailValidator");
 const {
     isValidNepaliPhoneNumber
 } = require("../utils/phNoValidation")
-const bcrypt = require("bcryptjs")
-const jwt = require("jsonwebtoken")
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const {doValidations}=require("../utils/allValidation");
 
 // @desc:Controller to create a new user
 // @method:POST
@@ -19,11 +20,11 @@ module.exports.createUser = async (req, res, next) => {
         if (!req.body) return next(new errorHandling("Empty body: Ensure you're sending the correct information.", 400));
         // list all possible keys
         const possibleFields = ["firstName", "lastName", "email", "dob", "country", "gender", "city", "zip", "address", "password", "phone2", "phone", "confirmPassword"];
+        const bodyField=Object.keys(req.body);
         
-
-        for (const key in req.body) {
-            if (!possibleFields.includes(key)) {
-                return next(new errorHandling("All fields are required, please fill up the form", 400));
+        for (const key in possibleFields) {
+            if (!bodyField.includes(key)) {
+                return next(new errorHandling(400,"All fields are required, please fill up the form"));
             }
         }
 
@@ -45,6 +46,7 @@ module.exports.createUser = async (req, res, next) => {
             confirmPassword
         } = req.body;
         
+        
         let fullName;
         // no middle name is given
         if (!middleName) {
@@ -52,15 +54,18 @@ module.exports.createUser = async (req, res, next) => {
         } else {
             fullName = `${firstName} ${middleName} ${lastName}`;
         }
-
+/*
         //email validation 
         if (!validateEmail(email)) return next(new errorHandling(400,"Please enter a valid email address"));
         //phone no validation
         if (!isValidNepaliPhoneNumber(phone)) return next(new errorHandling(400,"Please enter a valid phone number."));
 
         if (!isValidNepaliPhoneNumber(phone2)) return next(new errorHandling(400,"Please enter a valid phone number."));
+        if(phone===phone2) return next(new errorHandling(400,"The phone numbers are same.Please enter different phone numbers"));
         // check password and confirm password matches
         if (password !== confirmPassword) return next(new errorHandling(400,"Password and confirm password do not match"));
+        */
+        doValidations(next,email,phone,phone2,password,confirmPassword);
         // hash password
         const hashedPassword = bcrypt.hashSync(password);
         // mysql query
@@ -75,6 +80,7 @@ module.exports.createUser = async (req, res, next) => {
     } catch (error) {
         // email duplication error
         if (error.code === "ER_DUP_ENTRY") return next(new errorHandling(500,"Email address already used, please try another."));
+        console.log(error);
         return next(new errorHandling(500,error.message));
     }
 }
