@@ -21,13 +21,8 @@ module.exports.createUser = async (req, res, next) => {
         // list all possible keys
         const possibleFields = ["firstName", "lastName", "email", "dob", "country", "gender", "city", "zip", "address", "password", "phone2", "phone", "confirmPassword"];
         const bodyField=Object.keys(req.body);
-        
-        for (const key in possibleFields) {
-            if (!bodyField.includes(key)) {
-                return next(new errorHandling(400,"All fields are required, please fill up the form"));
-            }
-        }
-
+        const missing=possibleFields.filter((field)=> !bodyField.includes(field))
+        if(missing.length!==0)return next(new errorHandling(400,`Please fill these fields ${missing}`))
         // destructing the req.body object
         const {
             firstName,
@@ -54,18 +49,9 @@ module.exports.createUser = async (req, res, next) => {
         } else {
             fullName = `${firstName} ${middleName} ${lastName}`;
         }
-/*
-        //email validation 
-        if (!validateEmail(email)) return next(new errorHandling(400,"Please enter a valid email address"));
-        //phone no validation
-        if (!isValidNepaliPhoneNumber(phone)) return next(new errorHandling(400,"Please enter a valid phone number."));
 
-        if (!isValidNepaliPhoneNumber(phone2)) return next(new errorHandling(400,"Please enter a valid phone number."));
-        if(phone===phone2) return next(new errorHandling(400,"The phone numbers are same.Please enter different phone numbers"));
-        // check password and confirm password matches
-        if (password !== confirmPassword) return next(new errorHandling(400,"Password and confirm password do not match"));
-        */
-        doValidations(next,email,phone,phone2,password,confirmPassword);
+        const validationMessage=await doValidations(email,phone,phone2,password,confirmPassword);
+        if(validationMessage)return next(new errorHandling(400,validationMessage) )
         // hash password
         const hashedPassword = bcrypt.hashSync(password);
         // mysql query
