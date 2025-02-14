@@ -7,7 +7,9 @@ const {
 const errorHandling = require("../utils/errorHandling");
 
 
-
+// @desc:Controller to parse the data to the esewa end point 
+// @method:POST
+// @endPoint:localhost:4000/api/user/payment/make-payment
 module.exports.payWithEsewa = async (req, res, next) => {
     if (!req.body) return errorHandling(400, "All data field is required");
     if (!req.body.amount) return next(new errorHandling(400, "No amount is given.Please try again later."));
@@ -53,6 +55,9 @@ module.exports.payWithEsewa = async (req, res, next) => {
 }
 
 
+// @desc:Controller to store the booking details upon sucessufll payment form the user  
+// @method:GET
+// @endPoint:localhost:4000/api/user/booking/success
 module.exports.success = async (req, res, next) => {
     try {
         if (!req.query.data) return next(new errorHandling(500, "Server error"));
@@ -104,7 +109,9 @@ module.exports.success = async (req, res, next) => {
     }
 }
 
-
+// @desc:Controller to redirect to the error page if the payment failed 
+// @method:GET
+// @endPoint:localhost:4000/api/user/booking/failed
 module.exports.failure = (req, res, next) => {
     try {
         return res.sendFile(path.resolve(__dirname, '..', 'public', 'failed.html'));

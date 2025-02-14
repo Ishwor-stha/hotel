@@ -11,8 +11,11 @@ const {
 } = require("../utils/phNoValidation")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
-// @method POST
-// @desc:controller to check the jwt 
+
+
+
+// @desc:Controller to check the the token is valid or not
+ 
 module.exports.checkJwt = (req, res, next) => {
     try {
         const token = req.cookies.auth_token;
@@ -33,11 +36,15 @@ module.exports.checkJwt = (req, res, next) => {
         return next(new errorHandling(500, error.message));
     }
 }
-// @desc:test route
+// @desc:Controller to fetch all the admin form database
+// @method:GET
+// @endPoint:localhost:4000/api/admin/get
 module.exports.getAll = async (req, res, next) => {
     try {
+        // query for mysql
         const query = `SELECT * FROM admin`
         //console.log(req.originalUrl)
+        // fetching data form database
         let [data] = await connection.promise().query(query)
         res.status(200).json({
             "status": true,
@@ -51,8 +58,9 @@ module.exports.getAll = async (req, res, next) => {
         })
     }
 }
-// @desc:controller to create an admin
-//@method: POST
+// @desc:Controller to create a new admin
+// @method:POST
+// @endPoint:localhost:4000/api/admin/create-admin
 module.exports.createAdmin = async (req, res, next) => {
     try {
         if (!req.body) return next(new errorHandling(400, "Fields are empty.Please fill out the fields."));
@@ -84,8 +92,10 @@ module.exports.createAdmin = async (req, res, next) => {
         return next(new errorHandling(500, error.message));
     }
 }
-// @desc:controller to create an login
-//@method: POST
+
+// @desc:Controller to login for admin
+// @method:POST
+// @endPoint:localhost:4000/api/admin/login
 module.exports.login = async (req, res, next) => {
     try {
         // Taking userName from client side

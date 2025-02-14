@@ -13,6 +13,10 @@ const moment = require("moment")
 const calculateNights = (checkIn, checkOut) => {
     return moment(checkOut, "YYYY-MM-DD").diff(moment(checkIn, "YYYY-MM-DD"), "days");
 };
+
+// @desc:Controller to get the the details of hotel name check in check out no of rooms and the guest number from the user 
+// @method:POST
+// @endPoint:localhost:4000/api/user/booking/choose-hotel
 module.exports.chooseHotel = async (req, res, next) => {
     try {
         // roomNumber is the total number of room that guest has selected or enterd
@@ -46,6 +50,9 @@ module.exports.chooseHotel = async (req, res, next) => {
         return next(new errorHandling(500, error.message));
     }
 }
+// @desc:Controller to get the the details of room from user 
+// @method:POST
+// @endPoint:localhost:4000/api/user/booking/choose-room
 module.exports.chooseRoom = async (req, res, next) => {
     try {
         if (!req.session.booking_data) return next(new errorHandling(400, "Please fill out the previous form."));
@@ -98,6 +105,9 @@ module.exports.chooseRoom = async (req, res, next) => {
 //     }
 // }
 
+// @desc:Controller to get the price and redirect to the  payment 
+// @method:POST
+// @endPoint:localhost:4000/api/user/booking/book
 module.exports.book = async (req, res, next) => {
     try {
         // Validate session data
