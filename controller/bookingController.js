@@ -97,6 +97,7 @@ module.exports.chooseRoom = async (req, res, next) => {
 //         return next(new errorHandling(500, error.message));
 //     }
 // }
+
 module.exports.book = async (req, res, next) => {
     try {
         // Validate session data
@@ -114,7 +115,7 @@ module.exports.book = async (req, res, next) => {
             check_out
         } = req.session.booking_data;
         // Fetch room details from the database
-        const roomQuery = `SELECT * FROM rooms WHERE id = ?`;
+        const roomQuery = `SELECT price FROM rooms WHERE id = ?`;
         const [searchRoom] = await connection.promise().query(roomQuery, [room_id]);
         if (searchRoom.length === 0) {
             return next(new errorHandling(404, "No room found by this ID."));

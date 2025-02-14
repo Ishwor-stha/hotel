@@ -64,7 +64,7 @@ module.exports.createUser = async (req, res, next) => {
             "message": fullName + " created successfully"
         });
     } catch (error) {
-        if (error.code === "ER_DUP_ENTRY") return next(new errorHandling(500"Email address already used, please try another."));
+        if (error.code === "ER_DUP_ENTRY") return next(new errorHandling(500,"Email address already used, please try another."));
         return next(new errorHandling(500,error.message));
     }
 }

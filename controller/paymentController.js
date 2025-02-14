@@ -23,7 +23,7 @@ module.exports.payWithEsewa = async (req, res, next) => {
         const total_amount = parseFloat(amount) + parseFloat(tax_amount) + parseFloat(product_service_charge) + parseFloat(product_delivery_charge);
         const transaction_uuid = Date.now();
         const message = `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${PRODUCT_CODE}`;
-        const signature = crypto.createHmac('sha256', SECRET_KEY).update(message).digest('base64');
+        const signature = crypto.createHmac('sha256', process.env.SECRET_KEY).update(message).digest('base64');
         const paymentData = {
             amount: parseFloat(amount),
             tax_amount: parseFloat(tax_amount),
@@ -67,7 +67,7 @@ module.exports.success = async (req, res, next) => {
         const TotalAmt = decodedData.total_amount.replace(/,/g, ''); //removing the comma from the amount for hashing the message ie (5,000)=>(5000)
         const message = `transaction_code=${decodedData.transaction_code},status=${decodedData.status},total_amount=${TotalAmt},
         transaction_uuid=${decodedData.transaction_uuid},product_code=${process.env.PRODUCT_CODE},signed_field_names=${decodedData.signed_field_names}`;
-        const hash = crypto.createHmac("sha256", SECRET_KEY).update(message).digest("base64");
+        const hash = crypto.createHmac("sha256", process.env.SECRET_KEY).update(message).digest("base64");
         if (hash !== decodedData.signature) {
             return next(new errorHandling(400, "Invalid signature"));
         }
@@ -98,7 +98,7 @@ module.exports.success = async (req, res, next) => {
             transactionCode: transaction_code
         }
         await insertDetaisToDatabase(req.session, data);
-        return res.sendFile(path.join(__dirname, '..', 'public', 'sucess.html'));
+        return res.sendFile(path.resolve(__dirname, '..', 'public', 'sucess.html'));
     } catch (error) {
         return next(new errorHandling(500, "Server error"));
     }
@@ -107,7 +107,7 @@ module.exports.success = async (req, res, next) => {
 
 module.exports.failure = (req, res, next) => {
     try {
-        return res.sendFile(path.join(__dirname, '..', 'public', 'failed.html'));
+        return res.sendFile(path.resolve(__dirname, '..', 'public', 'failed.html'));
         // res.status(500).json({
         //     status: false,
         //     message: 'Transaction failed.Please try again later.',
