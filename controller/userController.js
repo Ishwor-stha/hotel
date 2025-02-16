@@ -55,7 +55,7 @@ module.exports.createUser = async (req, res, next) => {
         }
 
         const validationMessage=await doValidations(email,phone,phone2,password,confirmPassword);
-        if(validationMessage)return next(new errorHandling(400,validationMessage) )
+        if(validationMessage)return next(new errorHandling(400,validationMessage) );
         // hash password
         const hashedPassword = bcrypt.hashSync(password);
         // mysql query
@@ -81,40 +81,40 @@ module.exports.createUser = async (req, res, next) => {
 module.exports.login = async (req, res, next) => {
     try {
         //length of  keys in req.body must be 2 
-        if (Object.keys(req.body).length > 2) return next(new errorHandling(400, "Something went wrong.Please try again."))
+        if (Object.keys(req.body).length !== 2) return next(new errorHandling(400, "Some field are missing please fill out all the form."));
         // Taking userName from client side
-        const userEmail = req.body.email
+        const userEmail = req.body.email;
         // taking password from client side
-        const userPassword = req.body.password
+        const userPassword = req.body.password;
         // it there is no user name or password then terminate current middleware and call errorhandling middleware with two argument ie(errormessage,statusCode)
-        if (!userEmail || !userPassword) return next(new errorHandling(400, "Email or password field is empty."))
-        if (!validateEmail(userEmail)) return next(new errorHandling(400, "Please enter valid email address."))
+        if (!userEmail || !userPassword) return next(new errorHandling(400, "Email or password field is empty."));
+        if (!validateEmail(userEmail)) return next(new errorHandling(400, "Please enter valid email address."));
         
         // query for sql 
         const query = `SELECT * FROM users WHERE email = ?`;
         // fetching data form database
-        const [userDetail] = await connection.promise().query(query, [userEmail])
+        const [userDetail] = await connection.promise().query(query, [userEmail]);
         // if there is no userDetail then terminate current middleware and call errorhandling middleware
-        if (userDetail.length === 0) return next(new errorHandling(401, "Incorrect email or password.Please try again."))
+        if (userDetail.length === 0) return next(new errorHandling(401, "Incorrect email or password.Please try again."));
         // password form database
-        dbPassword = userDetail[0].password
+        dbPassword = userDetail[0].password;
         // name from database
-        dbName = userDetail[0].name
+        dbName = userDetail[0].name;
         // comparing password
-        const validPassword = await bcrypt.compare(userPassword, dbPassword) //true/false
+        const validPassword = await bcrypt.compare(userPassword, dbPassword); //true/false
         // if password doesnot match then terminate this/current middleware and call error handling middleware
-        if (!validPassword) return next(new errorHandling(401, "Incorrect email or password.Please try again."))
+        if (!validPassword) return next(new errorHandling(401, "Incorrect email or password.Please try again."));
         // creating payload for jwt token
         const payload = {
             "id": userDetail[0].id,
             "email": userDetail[0].email,
             "role": userDetail[0].role
-            
+
         }
         // generating jwt token
         const token = await jwt.sign(payload, process.env.jwt_secret_key, {
             expiresIn: process.env.jwt_expiry
-        })
+        });
         // sending the token to user
         res.cookie("auth_token", token, {
             httpOnly: true,
@@ -125,8 +125,8 @@ module.exports.login = async (req, res, next) => {
         res.status(200).json({
             status: true,
             message: `Hello ${dbName} welcome back.`
-        })
+        });
     } catch (error) {
-        return next(new errorHandling(500, error.message))
+        return next(new errorHandling(500, error.message));
     }
 }

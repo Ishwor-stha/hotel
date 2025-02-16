@@ -41,6 +41,8 @@ module.exports.checkJwt = (req, res, next) => {
 // @method:GET
 // @endPoint:localhost:4000/api/admin/get
 module.exports.getAll = async (req, res, next) => {
+    if(!req.user.role===process.env.arole)return next(new errorHandling(400,"You donot have permission to perform this action."))
+    
     try {
         // query for mysql
         const query = `SELECT * FROM admin`
@@ -63,6 +65,7 @@ module.exports.getAll = async (req, res, next) => {
 // @method:POST
 // @endPoint:localhost:4000/api/admin/create-admin
 module.exports.createAdmin = async (req, res, next) => {
+    if(!req.user.role===process.env.arole)return next(new errorHandling(400,"You donot have permission to perform this action."))
     try {
         if (!req.body) return next(new errorHandling(400, "Fields are empty.Please fill out the fields."));
         const {
