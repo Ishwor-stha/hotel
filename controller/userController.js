@@ -11,6 +11,9 @@ const {
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const {doValidations}=require("../utils/allValidation");
+const {capitalizeFirstLetter}=require("../utils/capitilizeFirstLetter");
+
+
 
 // @desc:Controller to create a new user
 // @method:POST
@@ -24,7 +27,6 @@ module.exports.createUser = async (req, res, next) => {
         // stores the key name  if the key is missing or the field is empty
         const missing=possibleFields.filter((field)=> !bodyField.includes(field) || !req.body[field])
         if(missing.length!==0)return next(new errorHandling(400,`Please fill these fields ${missing}`))
-            console.log("hello");
         // destructing the req.body object
         const {
             firstName,
@@ -47,9 +49,9 @@ module.exports.createUser = async (req, res, next) => {
         let fullName;
         // no middle name is given
         if (!middleName) {
-            fullName = `${firstName} ${lastName}`;
+            fullName = `${capitalizeFirstLetter(firstName)} ${capitalizeFirstLetter(lastName)}`;
         } else {
-            fullName = `${firstName} ${middleName} ${lastName}`;
+            fullName = `${capitalizeFirstLetter(firstName)} ${capitalizeFirstLetter(middleName)} ${capitalizeFirstLetter(lastName)}`;
         }
 
         const validationMessage=await doValidations(email,phone,phone2,password,confirmPassword);

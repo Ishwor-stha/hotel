@@ -17,7 +17,7 @@ module.exports.doValidations = (email, phone, phone2, password, confirmPassword)
         return "Please enter a valid phone number"
     }
     if (phone === phone2) {
-        return "The phone numbers are the same. Please enter different phone number"
+        return "The phone numbers are the same.Both phone number must be different."
     }
     if (password !== confirmPassword) {
         return  "Password and confirm password do not match"
