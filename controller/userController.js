@@ -21,8 +21,10 @@ module.exports.createUser = async (req, res, next) => {
         // list all possible keys
         const possibleFields = ["firstName", "lastName", "email", "dob", "country", "gender", "city", "zip", "address", "password", "phone2", "phone", "confirmPassword"];
         const bodyField=Object.keys(req.body);
-        const missing=possibleFields.filter((field)=> !bodyField.includes(field))
+        // stores the key name  if the key is missing or the field is empty
+        const missing=possibleFields.filter((field)=> !bodyField.includes(field) || !req.body[field])
         if(missing.length!==0)return next(new errorHandling(400,`Please fill these fields ${missing}`))
+            console.log("hello");
         // destructing the req.body object
         const {
             firstName,
