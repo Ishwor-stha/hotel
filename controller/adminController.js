@@ -1,21 +1,21 @@
 const {
     connection,
     connect
-} = require("../db")
+} = require("../db");
 const {
     validateEmail
-} = require("../utils/emailValidator")
-const errorHandling = require("../utils/errorHandling")
+} = require("../utils/emailValidator");
+const errorHandling = require("../utils/errorHandling");
 const {
     isValidNepaliPhoneNumber
-} = require("../utils/phNoValidation")
-const bcrypt = require("bcryptjs")
-const jwt = require("jsonwebtoken")
-
+} = require("../utils/phNoValidation");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const { createFullName } = require("../utils/createFullName")
 
 
 // @desc:Controller to check the the token is valid or not
- 
+
 module.exports.checkJwt = (req, res, next) => {
     try {
         const token = req.cookies.auth_token;
@@ -30,7 +30,6 @@ module.exports.checkJwt = (req, res, next) => {
                 return next(new errorHandling(403, "Your session has been expired.Please login again. "));
             }
             req.user = decode;
-            console.log(req.user);
             next();
         })
     } catch (error) {
@@ -41,14 +40,16 @@ module.exports.checkJwt = (req, res, next) => {
 // @method:GET
 // @endPoint:localhost:4000/api/admin/get
 module.exports.getAll = async (req, res, next) => {
-    if(!req.user.role===process.env.arole)return next(new errorHandling(400,"You donot have permission to perform this action."))
-    
+    // console.log(process.env.arole);
+    if (req.user.role !== process.env.arole) return next(new errorHandling(400, "You donot have permission to perform this action."))
+
     try {
         // query for mysql
         const query = `SELECT * FROM admin`
         //console.log(req.originalUrl)
         // fetching data form database
         let [data] = await connection.promise().query(query)
+        if (data.length === 0) return next(new errorHandling(404, "No admin found in the database."));
         res.status(200).json({
             "status": true,
             "total": data.length,
@@ -65,28 +66,33 @@ module.exports.getAll = async (req, res, next) => {
 // @method:POST
 // @endPoint:localhost:4000/api/admin/create-admin
 module.exports.createAdmin = async (req, res, next) => {
-    if(!req.user.role===process.env.arole)return next(new errorHandling(400,"You donot have permission to perform this action."))
+    if (req.user.role !== process.env.arole) return next(new errorHandling(400, "You donot have permission to perform this action."))
     try {
         if (!req.body) return next(new errorHandling(400, "Fields are empty.Please fill out the fields."));
+        const possibleFields = ["firstName", "middleName", "lastName", "email", "phone", "password", "confirmPassword"];
+        const reqBodyField = Object.keys(req.body);
+        const checkFields = possibleFields.filter((field) => !reqBodyField.includes(field) || !req.body[field]);
+        if (checkFields) return next(new errorHandling(400, `${checkFields} fields are missing please fill out these fields.`));
         const {
             firstName,
+            middleName,
             lastName,
             email,
             phone,
             password,
             confirmPassword
         } = req.body;
-        if (!firstName || !lastName || !email || !phone || !password || !confirmPassword) return next(new errorHandling(400, "Fields are empty.Please fill out the fields."));
         if (password !== confirmPassword) return next(new errorHandling(400, "Password does not match with confirm password."));
         // email validation
         if (!validateEmail(email)) return next(new errorHandling(400, "Please enter valid email address."));
         // ph no validation
         if (!isValidNepaliPhoneNumber(phone)) return next(new errorHandling(400, "Please enter valid phone number."));
+        const fullName = createFullName(firstName, middleName, lastName);
         // const query=`INSERT INTO admin (name, email, password, phone) VALUES (${name},${email},${password},${phone})`//vulnerable to sql injection
         const query = `INSERT INTO admin (name, email, password, phone) VALUES (?,?,?,?)`;
         const hashedPassword = bcrypt.hashSync(password, 10);
-        fullName = `${firstName.toLowerCase()} ${lastName.toLowerCase()}`;
-        const create = await connection.promise().query(query, [fullName, email, hashedPassword, phone]) //substuting the ???? from the actual data
+
+        const create = await connection.promise().query(query, [fullName, email, hashedPassword, phone]); //substuting the ???? from the actual data
         res.status(200).json({
             "status": true,
             "message": `${fullName} created sucessfully.`

@@ -5,13 +5,13 @@ const {
 const {
     validateEmail
 } = require("../utils/emailValidator");
-const {
-    isValidNepaliPhoneNumber
-} = require("../utils/phNoValidation")
+// const {
+//     isValidNepaliPhoneNumber
+// } = require("../utils/phNoValidation")
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const {doValidations}=require("../utils/allValidation");
-const {capitalizeFirstLetter}=require("../utils/capitilizeFirstLetter");
+const {createFullName}=require("../utils/createFullName")
 
 
 
@@ -46,13 +46,8 @@ module.exports.createUser = async (req, res, next) => {
         } = req.body;
         
         
-        let fullName;
-        // no middle name is given
-        if (!middleName) {
-            fullName = `${capitalizeFirstLetter(firstName)} ${capitalizeFirstLetter(lastName)}`;
-        } else {
-            fullName = `${capitalizeFirstLetter(firstName)} ${capitalizeFirstLetter(middleName)} ${capitalizeFirstLetter(lastName)}`;
-        }
+        const fullName=createFullName(firstName,middleName,lastName);
+        
 
         const validationMessage=await doValidations(email,phone,phone2,password,confirmPassword);
         if(validationMessage)return next(new errorHandling(400,validationMessage) );
