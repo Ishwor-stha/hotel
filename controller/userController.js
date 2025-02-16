@@ -107,7 +107,9 @@ module.exports.login = async (req, res, next) => {
         // creating payload for jwt token
         const payload = {
             "id": userDetail[0].id,
-            "email": userDetail[0].email
+            "email": userDetail[0].email,
+            "role": userDetail[0].role
+            
         }
         // generating jwt token
         const token = await jwt.sign(payload, process.env.jwt_secret_key, {

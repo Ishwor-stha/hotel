@@ -30,6 +30,7 @@ module.exports.checkJwt = (req, res, next) => {
                 return next(new errorHandling(403, "Your session has been expired.Please login again. "));
             }
             req.user = decode;
+            console.log(req.user);
             next();
         })
     } catch (error) {
@@ -116,7 +117,9 @@ module.exports.login = async (req, res, next) => {
         if (!validPassword) return next(new errorHandling(401, "Incorrect email or password.Please try again."));
         const payload = {
             "id": userDetail[0].id,
-            "email": userDetail[0].email
+            "email": userDetail[0].email,
+            "role": userDetail[0].role
+
         };
         const token = jwt.sign(payload, process.env.jwt_secret_key, {
             expiresIn: process.env.jwt_expiry
