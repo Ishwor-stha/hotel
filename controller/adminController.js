@@ -26,7 +26,10 @@ module.exports.checkJwt = (req, res, next) => {
         // check token
         jwt.verify(token, process.env.jwt_secret_key, (err, decode) => {
             if (err) {
-                console.log(err)
+                res.clearCookie('auth_token', {
+                httpOnly: true,
+                sameSite: "Strict"
+                 });
                 return next(new errorHandling(403, "Your session has been expired.Please login again. "));
             }
             req.user = decode;
@@ -40,11 +43,10 @@ module.exports.checkJwt = (req, res, next) => {
 // @method:GET
 // @endPoint:localhost:4000/api/admin/get
 module.exports.getAll = async (req, res, next) => {
-    console.log(req.user.role);
+    
     // console.log(process.env.arole);
-    if (req.user.role !== process.env.arole) return next(new errorHandling(400, "You donot have permission to perform this action."))
-
     try {
+        if (req.user.role !== process.env.arole) return next(new errorHandling(400, "You donot have permission to perform this action."))
         // query for mysql
         const query = `SELECT * FROM admin`
         //console.log(req.originalUrl)
@@ -68,8 +70,8 @@ module.exports.getAll = async (req, res, next) => {
 // @method:POST
 // @endPoint:localhost:4000/api/admin/create-admin
 module.exports.createAdmin = async (req, res, next) => {
-    if (req.user.role !== process.env.arole) return next(new errorHandling(400, "You donot have permission to perform this action."))
     try {
+        if (req.user.role !== process.env.arole) return next(new errorHandling(400, "You donot have permission to perform this action."))
         if (!req.body) return next(new errorHandling(400, "Fields are empty.Please fill out the fields."));
         const possibleFields = ["firstName", "middleName", "lastName", "email", "phone","phone2", "password", "confirmPassword","dob","gender","address","country","city","zip"];
         const reqBodyField = Object.keys(req.body);
@@ -80,12 +82,12 @@ module.exports.createAdmin = async (req, res, next) => {
 
         if(validationMessage)return next(new errorHandling(400,validationMessage));
         
-        const fullName = createFullName(firstName, middleName, lastName);
+        const fullName = createFullName(req.body.firstName,req.body.middleName,req.body.lastName);
 
         const hashedPassword = bcrypt.hashSync(req.body.password, 10);
         // const query=`INSERT INTO admin (name, email, password, phone) VALUES (${name},${email},${password},${phone})`//vulnerable to sql injection
         const query = `
-            INSERT INTO admin (fullName, email, password, phone, phone2, dob, gender, address, country, city, zip) 
+            INSERT INTO admin (name, email, password, phone, phone2, dob, gender, address, country, city, zip) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
         const values=[fullName, req.body.email, hashedPassword, req.body.phone, req.body.phone2, req.body.dob, req.body.gender, req.body.address, req.body.country, req.body.city, req.body.zip];
