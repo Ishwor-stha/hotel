@@ -81,11 +81,16 @@ module.exports.createAdmin = async (req, res, next) => {
         if(validationMessage)return next(new errorHandling(400,validationMessage));
         
         const fullName = createFullName(firstName, middleName, lastName);
-        // const query=`INSERT INTO admin (name, email, password, phone) VALUES (${name},${email},${password},${phone})`//vulnerable to sql injection
-        const query = `INSERT INTO admin (name, email, password, phone) VALUES (?,?,?,?)`;
-        const hashedPassword = bcrypt.hashSync(req.body.password, 10);
 
-        const create = await connection.promise().query(query, [fullName, email, hashedPassword, phone]); //substuting the ???? from the actual data
+        const hashedPassword = bcrypt.hashSync(req.body.password, 10);
+        // const query=`INSERT INTO admin (name, email, password, phone) VALUES (${name},${email},${password},${phone})`//vulnerable to sql injection
+        const query = `
+            INSERT INTO admin (fullName, email, password, phone, phone2, dob, gender, address, country, city, zip) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+        const values=[fullName, req.body.email, hashedPassword, req.body.phone, req.body.phone2, req.body.dob, req.body.gender, req.body.address, req.body.country, req.body.city, req.body.zip];
+
+        await connection.promise().query(query,values); //substuting the ???? from the actual data
         res.status(200).json({
             "status": true,
             "message": `${fullName} created sucessfully.`
