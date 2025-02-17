@@ -48,7 +48,7 @@ module.exports.getAll = async (req, res, next) => {
     try {
         if (req.user.role !== process.env.arole) return next(new errorHandling(400, "You donot have permission to perform this action."))
         // query for mysql
-        const query = `SELECT * FROM admin`
+        const query = `SELECT id, name, email, phone, phone2, dob, gender, address, country, city, zip FROM admin`
         //console.log(req.originalUrl)
         // fetching data form database
         let [data] = await connection.promise().query(query)
