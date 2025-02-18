@@ -51,6 +51,7 @@ module.exports.getAll = async (req, res, next) => {
         const query = `SELECT id, name, email, phone, phone2, dob, gender, address, country, city, zip FROM admin`
         //console.log(req.originalUrl)
         // fetching data form database
+        // destructure the first index of the array
         let [data] = await connection.promise().query(query)
         if (data.length === 0) return next(new errorHandling(404, "No admin found in the database."));
         res.status(200).json({
@@ -63,6 +64,32 @@ module.exports.getAll = async (req, res, next) => {
             "status": false,
             "messsage": error.message || "Something went wrong"
         })
+    }
+}
+
+module.exports.getOneAdmin=async(req,res,next)=>{
+    try{
+        const id=req.params.id;
+        if(!id)return next(new errorHandling(400,"No admin id is given as parameters"));
+        if(isNaN(Number(id))) return next(new errorHandling(400,"Only number are accepted."));
+
+        const query = `SELECT id, name, email, phone, phone2, dob, gender, address, country, city, zip FROM admin WHERE id=? LIMIT 1`;
+
+        let [data]=await connection.promise().query(query,[id]);
+        if(data.length==0)return next(new errorHandling(404,"No data found by given admin id."));
+        
+        res.status(200).json({
+
+            status:true,
+            details:data[0]
+        });    
+
+
+    }catch(error){
+        
+        console.log(error)
+        return next(new errorHandling(500,error.message));
+
     }
 }
 
