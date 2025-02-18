@@ -93,12 +93,16 @@ module.exports.createUser = async (req, res, next) => {
     } catch (error) {
         // email duplication error
         if (error.code === "ER_DUP_ENTRY") return next(new errorHandling(500, "Email address already used, please try another."));
-        console.log(error);
+        
         return next(new errorHandling(500, error.message));
     }
 }
+
+
+
 module.exports.veriyfyUser = async(req, res, next) => {
     try {
+
         const code = req.body.code
         const token = req.cookies.verificationToken;
         if (!token) return next(new errorHandling(500, "Please fill up the form again."));
@@ -108,11 +112,13 @@ module.exports.veriyfyUser = async(req, res, next) => {
         let userDetails;
         try {
             userDetails = jwt.verify(token, process.env.jwt_secret_key);
+
         } catch (err) {
             res.clearCookie('verificationToken');
             return next(new errorHandling(403, "Please fill out the form again. The verification time is over."));
         }
-        if (userDetails.email !== req.session.userData.email) {
+       
+        if (userDetails.email !== req.session.userData.email || userDetails.sessionID !== req.session.userData.sessionID) {
             req.session.destroy((err) => {
                 if (err) return next(new errorHandling(500, "Something went wrong."));
             })
@@ -132,6 +138,8 @@ module.exports.veriyfyUser = async(req, res, next) => {
         return next(new errorHandling(500, error.message));
     }
 }
+
+
 // @desc:Controller to login by user
 // @method:POST
 // @endPoint:localhost:4000/api/user/login
