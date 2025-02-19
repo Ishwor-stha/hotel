@@ -47,12 +47,17 @@ module.exports.createUser = async (req, res, next) => {
             phone,
             confirmPassword
         } = req.body;
-        const fullName = createFullName(firstName, middleName, lastName);
+
         const validationMessage = await doValidations(email, phone, phone2, password, confirmPassword);
+
         if (validationMessage) return next(new errorHandling(400, validationMessage));
+
         const [checkUser]=await connection.promise().query("SELECT name FROM users WHERE email= ?",[email])
+
+        if(checkUser.length!==0)return next(new errorHandling(500, "Email address is already used.Please try another email."));
+
+        const fullName = createFullName(firstName, middleName, lastName);
         // email duplication error
-        if(checkUser.length!==0)return next(new errorHandling(500, "Emaild address already used, please try another."));
         // hash password
         const hashedPassword = bcrypt.hashSync(password, 10);
         const code = crypto.randomInt(100000, 1000000); // Generates number from 100000 to 999999
@@ -75,7 +80,6 @@ module.exports.createUser = async (req, res, next) => {
         }
         const payload = {
             email: email,
-            code: code,
             sessionID:sessionID
         }
         const verificationToken = jwt.sign(payload, process.env.jwt_secret_key, {
@@ -92,7 +96,7 @@ module.exports.createUser = async (req, res, next) => {
         //function to send mail
         res.status(200).json({
             "status": true,
-            "message": "code sent to your email"
+            "message": "Code sent to your email"
         });
     } catch (error) {
         
@@ -109,6 +113,7 @@ module.exports.veriyfyUser = async(req, res, next) => {
 
         const code = req.body.code
         const token = req.cookies.verificationToken;
+        
         if (!token) return next(new errorHandling(500, "Please fill up the form again."));
         if (!code) return next(new errorHandling(500, "Invalid code given.Please try again with valid code."));
         if (String(code).length != 6) return next(new errorHandling(500, "The code length must be 6.Please enter valid code"));
@@ -128,12 +133,20 @@ module.exports.veriyfyUser = async(req, res, next) => {
             })
             return next(new errorHandling(500, "Oops something went wrong"));
         }
-        if (code !== req.session.userData.code) return next(new errorHandling(404, "The code doesnot match.Please enter correct code."));
+        if (code !== req.session.userData.code ) return next(new errorHandling(404, "The code doesnot match.Please enter correct code."));
         const values = [req.session.userData.fullName, req.session.userData.email, req.session.userData.dob, req.session.userData.gender, req.session.userData.address, req.session.userData.password, req.session.userData.phone, req.session.userData.phone2, req.session.userData.country, req.session.userData.city, req.session.userData.zip]
+        // destroy the session
+         req.session.destroy((err) => {
+                if (err) return next(new errorHandling(500, "Something went wrong."));
+            })
+         // clear the verificationToken from the client
+        res.clearCookie('verificationToken');
+
         // // mysql query
         const query = `INSERT INTO users (name, email, dob, gender, address, password, phone, phone2, country, city, zip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         // //inserting the user details in database
         const createUser = await connection.promise().query(query, values);
+       
         res.status(200).json({
             status: true,
             message: "Account verified sucessfully.Please login again."
