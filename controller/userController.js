@@ -17,6 +17,7 @@ const {
 const {
     createFullName
 } = require("../utils/createFullName")
+
 // @desc:Controller to create a new user
 // @method:POST
 // @endPoint:localhost:4000/api/user/create-user
@@ -49,11 +50,14 @@ module.exports.createUser = async (req, res, next) => {
         const fullName = createFullName(firstName, middleName, lastName);
         const validationMessage = await doValidations(email, phone, phone2, password, confirmPassword);
         if (validationMessage) return next(new errorHandling(400, validationMessage));
+        const [checkUser]=await connection.promise().query("SELECT name FROM users WHERE email= ?",[email])
+        // email duplication error
+        if(checkUser.length!==0)return next(new errorHandling(500, "Emaild address already used, please try another."));
         // hash password
         const hashedPassword = bcrypt.hashSync(password, 10);
         const code = crypto.randomInt(100000, 1000000); // Generates number from 100000 to 999999
         const sessionID=crypto.randomInt(100000, 1000000);
-
+        console.log(code);
         req.session.userData = {
             fullName: fullName,
             email: email,
@@ -91,8 +95,8 @@ module.exports.createUser = async (req, res, next) => {
             "message": "code sent to your email"
         });
     } catch (error) {
-        // email duplication error
-        if (error.code === "ER_DUP_ENTRY") return next(new errorHandling(500, "Email address already used, please try another."));
+        
+        
         
         return next(new errorHandling(500, error.message));
     }
@@ -107,7 +111,7 @@ module.exports.veriyfyUser = async(req, res, next) => {
         const token = req.cookies.verificationToken;
         if (!token) return next(new errorHandling(500, "Please fill up the form again."));
         if (!code) return next(new errorHandling(500, "Invalid code given.Please try again with valid code."));
-        if (code.length != 6) return next(new errorHandling(500, "The code length must be 6.Please enter valid code"));
+        if (String(code).length != 6) return next(new errorHandling(500, "The code length must be 6.Please enter valid code"));
         if (isNaN(Number(code))) return next(new errorHandling(500, "Invalid code.A code must be a number."));
         let userDetails;
         try {
@@ -132,7 +136,7 @@ module.exports.veriyfyUser = async(req, res, next) => {
         const createUser = await connection.promise().query(query, values);
         res.status(200).json({
             status: true,
-            message: "Account created sucessfully"
+            message: "Account verified sucessfully.Please login again."
         })
     } catch (error) {
         return next(new errorHandling(500, error.message));

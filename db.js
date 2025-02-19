@@ -1,11 +1,14 @@
 const mysql = require("mysql2");
 const kleur = require("kleur")
+const dotenv=require("dotenv");
+dotenv.config()
 // Create a connection to the database
 const connection = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "Django1@@1", //  MySQL password
-    database: "hotel", //MySQL database name
+   
+    host: process.env.host,
+    user: process.env.user,
+    password: process.env.password, //  MySQL password
+    database: process.env.database, //MySQL database name
 });
 // Connect to MySQL
 const connect = () => {
