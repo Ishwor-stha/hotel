@@ -7,6 +7,7 @@ module.exports = async (next, message, subject, email, name) => {
 
     //  API key
     const API_KEY = process.env.API_KEY;
+    console.log(API_KEY);
 
     // Email details
     const emailData = {

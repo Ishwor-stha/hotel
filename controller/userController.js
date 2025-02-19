@@ -84,7 +84,7 @@ module.exports.createUser = async (req, res, next) => {
             email: email,
             sessionID:sessionID
         }
-        const message=verificationMessage(code,fullName,);
+        const message=messageTemplate(code,fullName,);
         const subject="Verification code";
         await sendMail(next,message,email,fullName);
         const verificationToken = jwt.sign(payload, process.env.jwt_secret_key, {
@@ -104,7 +104,7 @@ module.exports.createUser = async (req, res, next) => {
             "message": "Code sent to your email"
         });
     } catch (error) {
-        
+
         
         
         return next(new errorHandling(500, error.message));
