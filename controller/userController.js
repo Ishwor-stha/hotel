@@ -17,6 +17,8 @@ const {
 const {
     createFullName
 } = require("../utils/createFullName")
+const sendMail=require("../utils/sendMail")
+const {messageTemplate}=require("../utils/verificationMessage")
 
 // @desc:Controller to create a new user
 // @method:POST
@@ -62,7 +64,7 @@ module.exports.createUser = async (req, res, next) => {
         const hashedPassword = bcrypt.hashSync(password, 10);
         const code = crypto.randomInt(100000, 1000000); // Generates number from 100000 to 999999
         const sessionID=crypto.randomInt(100000, 1000000);
-        console.log(code);
+        
         req.session.userData = {
             fullName: fullName,
             email: email,
@@ -82,6 +84,9 @@ module.exports.createUser = async (req, res, next) => {
             email: email,
             sessionID:sessionID
         }
+        const message=verificationMessage(code,fullName,);
+        const subject="Verification code";
+        await sendMail(next,message,email,fullName);
         const verificationToken = jwt.sign(payload, process.env.jwt_secret_key, {
             expiresIn: process.env.jwt_expiry
         });
@@ -113,7 +118,7 @@ module.exports.veriyfyUser = async(req, res, next) => {
 
         const code = req.body.code
         const token = req.cookies.verificationToken;
-        
+
         if (!token) return next(new errorHandling(500, "Please fill up the form again."));
         if (!code) return next(new errorHandling(500, "Invalid code given.Please try again with valid code."));
         if (String(code).length != 6) return next(new errorHandling(500, "The code length must be 6.Please enter valid code"));
