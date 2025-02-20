@@ -17,8 +17,9 @@ const {
 const {
     createFullName
 } = require("../utils/createFullName")
-const sendMail=require("../utils/sendMail")
+// const sendMail=require("../utils/sendMail")
 const {messageTemplate}=require("../utils/verificationMessage")
+const {sendMessage}=require("../utils/nodemailer")
 
 // @desc:Controller to create a new user
 // @method:POST
@@ -86,7 +87,8 @@ module.exports.createUser = async (req, res, next) => {
         }
         const message=messageTemplate(code,fullName,);
         const subject="Verification code";
-        await sendMail(next,message,email,fullName);
+        // await sendMail(next,message,email,fullName);
+        await sendMessage(email,subject,message)
         const verificationToken = jwt.sign(payload, process.env.jwt_secret_key, {
             expiresIn: process.env.jwt_expiry
         });
