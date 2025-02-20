@@ -13,6 +13,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { createFullName } = require("../utils/createFullName");
 const {doValidations}=require("../utils/allValidation");
+const{forgetPasswordMessage}=require("../utils/forgetTemplate")
+const crypto=require("crypto")
+const {sendMessage}=require("../utils/nodemailer");
 
 // @desc:Controller to check the the token is valid or not
 module.exports.checkJwt = (req, res, next) => {
@@ -100,7 +103,7 @@ module.exports.createAdmin = async (req, res, next) => {
     try {
         if (req.user.role !== process.env.arole) return next(new errorHandling(400, "You donot have permission to perform this action."))
         if (!req.body) return next(new errorHandling(400, "Fields are empty.Please fill out the fields."));
-        const possibleFields = ["firstName", "middleName", "lastName", "email", "phone","phone2", "password", "confirmPassword","dob","gender","address","country","city","zip"];
+        const possibleFields = ["firstName", "lastName", "email", "phone","phone2", "password", "confirmPassword","dob","gender","address","country","city","zip"];
         const reqBodyField = Object.keys(req.body);
         const checkFields = possibleFields.filter((field) => !reqBodyField.includes(field) || !req.body[field]);
         if (checkFields.length!==0) return next(new errorHandling(400, `${checkFields} fields are missing please fill out these fields.`));
@@ -171,5 +174,51 @@ module.exports.login = async (req, res, next) => {
         });
     } catch (error) {
         return next(new errorHandling(500, error.message));
+    }
+}
+
+module.exports.forgetPassowrd=async (req,res,next)=>{
+    try{
+        const {email}=req.body
+        if(!email)return next(new errorHandling(400,"Please enter email."));
+        if(!validateEmail(email))return next(new errorHandling(400,"Please enter valid email address."));
+        const queryForFetching=`SELECT name FROM admin WHERE email=?`
+        const [data]=await connection.promise().query(queryForFetching,[email]);
+        if(data.length===0)return next(new errorHandling(404,"No user found from this email address.Please reenter a email."));
+        const token=crypto.randomBytes(8).toString('hex')
+        const link=`${process.env.domain}api/admin/reset-password/${token}`
+        const name=data[0].name;
+        const message=forgetPasswordMessage(link,name);
+        const subject="Reset link";
+
+        await sendMessage(res,email,subject,message);
+        const query=`UPDATE admin SET code = ? WHERE email = ?`;
+        await connection.promise().query(query,[token,email]);
+
+        res.status(200).json({
+            status:true,
+            message:"Reset link is sent to your email"
+        })
+
+
+
+    }catch(error){
+        const quer=`UPDATE users SET code = ? WHERE email = ?`;query=`UPDATE users SET code = ? WHERE email = ?`;
+        await connection.promise().query(quer,[null,email])
+
+        return next(new errorHandling(error.statusCode ||500,error.message));
+    }
+}
+
+module.exports.resetPassword=(req,res,next)=>{
+    try{
+        const code=req.params.code
+        const {email}=req.body.email
+        if(!code)return next(new errorHandling(400,"Oops something went wrong"));
+        if(!email)return next(new errorHandling(400,"Please enter email address."));
+        
+
+    }catch(error){
+        next(new errorHandling(error.statusCode||500,error.message));
     }
 }
