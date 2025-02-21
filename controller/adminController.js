@@ -217,6 +217,7 @@ module.exports.resetPassword=(req,res,next)=>{
         if(!code)return next(new errorHandling(400,"Oops something went wrong"));
         if(!email)return next(new errorHandling(400,"Please enter email address."));
         
+        
 
     }catch(error){
         next(new errorHandling(error.statusCode||500,error.message));
