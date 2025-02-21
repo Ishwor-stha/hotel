@@ -214,7 +214,7 @@ module.exports.resetPassword=async(req,res,next)=>{
     try{
         const userCode=req.params.code
         const {email,password,confirmPassword}=req.body.email
-        if(!code)return next(new errorHandling(400,"Oops something went wrong"));
+        if(!userCode)return next(new errorHandling(400,"Oops something went wrong"));
         if(!email || !password || !confirmPassword)return next(new errorHandling(400,"Email,password or confirmPassword is missng please fill out the form again."));
         if(!validateEmail(email))return next(new errorHandling(400,"Please enter valid email address"));
         if(String(code).length!==6)return next(new errorHandling(400,"The code must be the length of 6.Please enter Valid code."));
