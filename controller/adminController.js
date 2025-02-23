@@ -1,14 +1,13 @@
 const {
     connection,
-    connect
 } = require("../db");
 const {
     validateEmail
 } = require("../utils/emailValidator");
 const errorHandling = require("../utils/errorHandling");
-const {
-    isValidNepaliPhoneNumber
-} = require("../utils/phNoValidation");
+// const {
+//     isValidNepaliPhoneNumber
+// } = require("../utils/phNoValidation");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { createFullName } = require("../utils/createFullName");

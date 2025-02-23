@@ -2,12 +2,12 @@ const errorHandling = require("../utils/errorHandling")
 const {
     connection
 } = require("../db")
-const {
-    validateEmail
-} = require("../utils/emailValidator")
-const {
-    isValidNepaliPhoneNumber
-} = require("../utils/phNoValidation")
+// const {
+//     validateEmail
+// } = require("../utils/emailValidator")
+// const {
+//     isValidNepaliPhoneNumber
+// } = require("../utils/phNoValidation")
 const axios = require("axios");
 const moment = require("moment")
 const calculateNights = (checkIn, checkOut) => {
