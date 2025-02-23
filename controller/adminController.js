@@ -94,7 +94,6 @@ module.exports.getOneAdmin=async(req,res,next)=>{
 
     }
 }
-
 // @desc:Controller to create a new admin
 // @method:POST
 // @endPoint:localhost:4000/api/admin/create-admin
@@ -212,11 +211,10 @@ module.exports.forgetPassowrd=async (req,res,next)=>{
 module.exports.resetPassword=async(req,res,next)=>{
     try{
         const userCode=req.params.code
-        const {email,password,confirmPassword}=req.body.email
+        const {email,password,confirmPassword}=req.body
         if(!userCode)return next(new errorHandling(400,"Oops something went wrong"));
         if(!email || !password || !confirmPassword)return next(new errorHandling(400,"Email,password or confirmPassword is missng please fill out the form again."));
         if(!validateEmail(email))return next(new errorHandling(400,"Please enter valid email address"));
-        if(String(code).length!==6)return next(new errorHandling(400,"The code must be the length of 6.Please enter Valid code."));
         if(password !==confirmPassword)return next(new errorHandling(400,"Confirm password and password must be same."));
         const [query]=await connection.promise().query(`SELECT email,code FROM admin WHERE email=?`,[email]);
         if(!query || query[0].length ===0)return next(new errorHandling(400,"The code or email is not found.Please try again."));
@@ -224,7 +222,8 @@ module.exports.resetPassword=async(req,res,next)=>{
         if(query[0].code !==userCode)return next(new errorHandling(400,"Please enter correct code."));
         const hashedPassword=bcrypt.hashSync(password,10);
 
-        await connection.promise().query(`UPDATE users SET password = ?,code=? WHERE email = ?`,[hashedPassword,null,email])
+
+        await connection.promise().query(`UPDATE admin SET password = ?,code=? WHERE email = ?`,[hashedPassword,null,email])
         res.status(200).json({
         
             status:true,

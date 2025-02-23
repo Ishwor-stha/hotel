@@ -3,8 +3,8 @@ const {getAll,createAdmin,login,checkJwt,getOneAdmin,forgetPassowrd,resetPasswor
 Router.route("/get").get(checkJwt,getAll)
 Router.route("/get-one-admin/:id").get(checkJwt,getOneAdmin)
 Router.route("/create-admin").post(checkJwt,createAdmin)
-Router.route("/forget-password").post(forgetPassowrd)
 Router.route("/login").post(login)
+Router.route("/forget-password").post(forgetPassowrd)
 Router.route("/reset-password/:code").post(resetPassword)
 
 
