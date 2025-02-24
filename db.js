@@ -3,6 +3,10 @@ const kleur = require("kleur")
 const dotenv=require("dotenv");
 dotenv.config()
 // Create a connection to the database
+// console.log(process.env.password)
+// console.log(process.env.host);
+// console.log(process.env.user);
+// console.log(process.env.database );
 const connection = mysql.createConnection({
    
     host: process.env.host,
