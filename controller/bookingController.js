@@ -40,7 +40,7 @@ module.exports.chooseHotel = async (req, res, next) => {
             room_number: roomNumber,
             guest_number: guestNumber,
             user_id:req.user.id,
-            url: req.originalUrl
+            url1: req.originalUrl
         };
         res.status(200).json({
             status: true,
@@ -56,7 +56,7 @@ module.exports.chooseHotel = async (req, res, next) => {
 module.exports.chooseRoom = async (req, res, next) => {
     try {
         if (!req.session.booking_data) return next(new errorHandling(400, "Please fill out the previous form."));
-        if (req.session.booking_data["url"] !== "/api/user/choose-hotel") return next(new errorHandling(400, "Please fil out the previous form."));
+        if (req.session.booking_data["url1"] !== "/api/user/choose-hotel") return next(new errorHandling(400, "Please fil out the previous form."));
         let {
             room_id
         } = req.body;
@@ -67,7 +67,7 @@ module.exports.chooseRoom = async (req, res, next) => {
         const [checkRoom] = await connection.promise().query(query, [room_id]);
         if (checkRoom.length === 0) return next(new errorHandling(404, "No room found on the database."));
         req.session.booking_data["room_id"] = room_id;
-        req.session.booking_data["url"] = req.originalUrl;
+        req.session.booking_data["url2"] = req.originalUrl;
         res.status(200).json({
             "status": true,
             "message": "ok"
@@ -114,7 +114,7 @@ module.exports.book = async (req, res, next) => {
         if (!req.session.booking_data) {
             return next(new errorHandling(400, "Please fill out all the previous forms."));
         }
-        if (req.session.booking_data["url"] !== "/api/user/payment-details") {
+        if (req.session.booking_data["url2"] !== "/api/user/payment-details") {
             return next(new errorHandling(400, "Please fill out the previous form."));
         }
         // Extract booking data from session
