@@ -11,6 +11,7 @@ const bookingRoute=require("./routes/bookingRoute")
 const errorController = require("./controller/errorController")
 const logout=require("./routes/logoutRoute")
 const paymentRoute=require("./routes/paymentRoute")
+const hotelRoute=require("./routes/hotelRoute")
 
 const session=require("express-session")
 dotenv.config()
@@ -34,6 +35,8 @@ app.use("/api/user/",userRoute)
 app.use("/api/",logout)
 app.use("/api/user/booking",bookingRoute)
 app.use("/api/user/payment",paymentRoute)
+app.use("/api/hotel",hotelRoute)
+
 
 
 
