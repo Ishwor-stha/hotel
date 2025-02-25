@@ -5,9 +5,9 @@ const {
     validateEmail
 } = require("../utils/emailValidator");
 const errorHandling = require("../utils/errorHandling");
-// const {
-//     isValidNepaliPhoneNumber
-// } = require("../utils/phNoValidation");
+const {
+    isValidNepaliPhoneNumber
+} = require("../utils/phNoValidation");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { createFullName } = require("../utils/createFullName");
@@ -128,6 +128,53 @@ module.exports.createAdmin = async (req, res, next) => {
     } catch (error) {
         if (error.code === "ER_DUP_ENTRY") return next(new errorHandling(500, `An account with this email address is already exists.Please try another email address.`));
         return next(new errorHandling(500, error.message));
+    }
+}
+module.exports.updateAdmin=async(req,res,next)=>{
+    try{
+        if(req.user.role !== "admin")return next(new errorHandling(409,"You donot have enough permission to perform this task."))
+        // from jwtVerify controller
+        const id=req.user.id
+        if(!id)return next(new errorHandling(409,"Please login first"))
+
+        if(!req.body ||Object.keys(req.body).length===0)return next(new errorHandling(400,"The body field is empty."));
+        const possibleFields = ["firstName", "lastName", "email", "phone","phone2", "password", "confirmPassword","dob","gender","address","country","city","zip"];
+        const checkValue=Object.keys(req.body).filter(field=> !req.body[field])
+        if(checkValue.length!==0) return next(new errorHandling(400,`Empty ${checkValue} body`))
+
+        // check if the req.body object has the keys which matches the the option in possible field and also checks the keys is empty or not 
+        const validField=Object.keys(req.body).filter(field=> possibleFields.includes(field))
+        
+        if(validField.includes("email")){
+            if(!validateEmail(req.body["email"])) return next(new errorHandling(400,"Please enter valid email address."))
+
+        } 
+        if(validField.includes("phone") ){
+            if(!isValidNepaliPhoneNumber(req.body["phone"]))return next(new errorHandling(400,"Please enter valid phone number."))
+
+        }
+        if(validField.includes("phone2")){
+            if(!isValidNepaliPhoneNumber(req.body["phone2"]))return next(new errorHandling(400,"Please enter valid phone number."))
+
+        }
+        if(validField.includes("password")){
+            if(req.body[password] !==req.body["confirmPassword"])return next(new errorHandling(400,"Password doesnot match with confirm password."))
+
+            const hashedPassword=bcrypt.hashSync(req.body["password"],10)
+            req.body["password"]=hashedPassword        
+        }
+
+        const dbField=valueFields.map(field=> `${field}=?`)
+        const values=validField.map(field=> req.body[field])
+        const query=`UPDATE hotels SET ${dbField.join(",")} WHERE id =${id}` 
+        const update=await connection.promise().query(query,values)
+        if(update[0]["affectedRows"]===0)return next(new errorHandling(500,"Cannot update the deatils.Please try again later."))
+        res.status(200).json({
+            status:true,
+            message:"Detail updated sucessfully."
+        })
+    }catch(error){
+        return next(new errorHandling(error.statusCode||500,error.message))
     }
 }
 
