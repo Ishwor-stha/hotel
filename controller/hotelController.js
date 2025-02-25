@@ -9,8 +9,14 @@ module.exports.createHotel=async(req,res,next)=>{
 		const checkFields=possibleFields.filter(field=> !Object.keys(req.body).includes(field) || !req.body[field])
 
 		if(checkFields.length!==0)return next(new errorHandling(400,`${checkFields}${checkFields.length>1?"are":"is"} missing please fill out all the fields.`));
-		const query=`INSERT INTO hotels (name,description,image,location) VALUES(?,?,?,?)`
-		const values=[req.body.name,req.body.description,req.body.image,req.body.location];
+		let questionMark=""
+		for(let i=0;i<possibleFields.length;i++){
+			if(i===possibleFields.length-1)questionMark+=`?`
+			else questionMark+=`?,`
+		}
+		// console.log(questionMark) 
+		const query=`INSERT INTO hotels (${possibleFields.join(",")}) VALUES(${questionMark})`
+		const values=possibleFields.map(field=> req.body[field]);
 		const upload =await connection.promise().query(query,values);
 		if(!upload)return next(new errorHandling(500,"Cannot create hotel please try again later."))		 
 		res.status(200).json({
@@ -40,6 +46,7 @@ module.exports.updateHotel=async (req,res,next)=>{
 		// console.log(fieldName);
 		// console.log(value)
 		const query=`UPDATE hotels SET ${fieldName} WHERE id =${id}`
+		console.log(query);
 		res.status(200).json({
 			status:true,
 			message:"Updated sucessfully"
