@@ -38,15 +38,22 @@ module.exports.updateHotel=async (req,res,next)=>{
 		if(!id)return next(new errorHandling(400,"No id is given for hotel"));
 		if(isNaN(Number(id)))return next(new errorHandling(400,"Hotel id must be a number."));
 		const possibleFields=["name","description","image","location"]
+		let valueFields=[]
 		const bodyField=Object.keys(req.body).map((field)=>{
-			if(possibleFields.includes(field))return `${field}=?` 
+			if(possibleFields.includes(field)){
+				valueFields.push(field)
+				return `${field}=?` 
+			}
 		})
-		const value=bodyField.map(field=>req.body[field])
+		const value=valueFields.map(field=>req.body[field])
+
 		const fieldName=bodyField.join(",")
 		// console.log(fieldName);
 		// console.log(value)
 		const query=`UPDATE hotels SET ${fieldName} WHERE id =${id}`
-		console.log(query);
+		const update=await connection.promise().query(query,value);
+		if(update[0]["affectedRows"]===0 )return next(new errorHandling(500,"Cannot update the details please check the id or details."))
+		// console.log(update);
 		res.status(200).json({
 			status:true,
 			message:"Updated sucessfully"
