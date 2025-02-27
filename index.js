@@ -10,6 +10,7 @@ const userRoute=require("./routes/userRoute")
 const bookingRoute=require("./routes/bookingRoute")
 const errorController = require("./controller/errorController")
 const logout=require("./routes/logoutRoute")
+const roomRoute=require("./routes/roomRoute")
 const paymentRoute=require("./routes/paymentRoute")
 const hotelRoute=require("./routes/hotelRoute")
 
@@ -36,6 +37,7 @@ app.use("/api/",logout)
 app.use("/api/user/booking",bookingRoute)
 app.use("/api/user/payment",paymentRoute)
 app.use("/api/hotel",hotelRoute)
+app.use("/api/rooms",roomRoute)
 
 
 
