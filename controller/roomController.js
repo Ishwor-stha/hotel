@@ -22,7 +22,7 @@ module.exports.createRoom = async (req, res, next) => {
 
         res.status(200).json({
             status: true,
-            message: "success"
+            message: "Room created sucessfully."
         })
     } catch (error) {
         return next(new errorHandling(error.statusCode || 500, error.message))
@@ -30,7 +30,7 @@ module.exports.createRoom = async (req, res, next) => {
 }
 
 
-// id              | int           | NO   | PRI | NULL              | auto_increment                                |
+// 	 id              | int           | NO   | PRI | NULL              | auto_increment                                |
 // | hotel_id        | int           | NO   | MUL | NULL              |                                               |
 // | room_type       | varchar(50)   | NO   |     | NULL              |                                               |
 // | price_per_night | decimal(10,2) | NO   |     | NULL              |                                               |
