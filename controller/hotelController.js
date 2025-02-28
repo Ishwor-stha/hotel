@@ -71,8 +71,8 @@ module.exports.deleteHotel=async(req,res,next)=>{
 		if(!id)return next(new errorHandling(400,"No id is given for hotel"));
 		if(isNaN(Number(id)))return next(new errorHandling(400,"Hotel id must be a number."));
 		const query=`DELETE FROM hotels WHERE id=?`
-		const deleteHotel=await connection.promise.query(query,id);
-		console.log(deleteHotel);
+		const [deleteHotel]=await connection.promise().execute(query,[id]);
+		if(deleteHotel["affectedRows"]===0)return next (new errorHandling(404,"Cannot delete hotel please enter valid id."))
 		res.status(200).json({
 			status:true,
 			message:"Hotel deleted sucessfully"
