@@ -131,15 +131,19 @@ module.exports.getBookingDataForAdmin=async(req,res,next)=>{
         const {email}=req.body.email 
         if(!email || Object.keys(req.body.email).length===0)return next (new errorHandling(400,"Please provide email to get booking data."));
         if(!validateEmail(email.trim()))return next (new errorHandling(400,"Please enter valid email address."));
-        const query= `SELECT id FROM users WHERE email=?`
-        const [userData]=await connection.promise().query(query,[email]);
+        const queryForFetchingId= `SELECT id FROM users WHERE email=?`
+        const [userData]=await connection.promise().query(queryForFetchingId,[email]);
+        if(!userData || userData.length===0)return next(new errorHandling(404,"No User found form this email."));
+
+        const field=`check_in_date,check_out_date,guests,total_price,booking_date,arrival_time,number_of_room,transaction_status,transaction_uuid,transaction_code`
+        const bookingDataQuery=`SELECT * from bookings WHERE user_id=?`
+        const id=userData[0].id
+        const [getBokingData]=await connection.promise().query(bookingQuery,[id]) 
+        if(!booking_data || getBokingData.length===0)return next(new errorHandling(404,"No booking data found form this email."));
         res.status(200).json({
             status:true,
-            message:" this is the booking data for admin "
+            message:getBokingData
         })
-
-
-
 
 
     }catch(error){

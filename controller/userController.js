@@ -218,6 +218,14 @@ module.exports.login = async (req, res, next) => {
     }
 }
 
+// module.exports.findUserById=(req,res,next)=>{
+    
+// }
+
+
+//module.exports.findUserByEmail 
+
+
 // module.exports.updaeUser=(req,res,next)=>{
     
 // }

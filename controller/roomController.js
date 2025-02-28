@@ -5,7 +5,7 @@ const {
 module.exports.createRoom = async (req, res, next) => {
     try {
         if(req.user.role!==process.env.arole)return next(new errorHandling(401,"You donot have enough permission to perform this task."));
-        
+
     	if(!req.body ||Object.keys(req.body).length ===0)return next(new errorHandling(400,"Empty body please send data ."))
     	const possibleFields=["room_type","price_per_night","capacity","features","images"]
     	const checkFields=Object.keys(req.body).filter(field=> !possibleFields.includes(field) || !req.body[field] );
@@ -32,13 +32,11 @@ module.exports.createRoom = async (req, res, next) => {
 }
 
 
-// 	 id              | int           | NO   | PRI | NULL              | auto_increment                                |
-// | hotel_id        | int           | NO   | MUL | NULL              |                                               |
-// | room_type       | varchar(50)   | NO   |     | NULL              |                                               |
-// | price_per_night | decimal(10,2) | NO   |     | NULL              |                                               |
-// | capacity        | int           | NO   |     | NULL              |                                               |
-// | features        | text          | YES  |     | NULL              |                                               |
-// | availability    | tinyint(1)    | YES  |     | 1                 |                                               |
-// | created_at      | timestamp     | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED                             |
-// | updated_at      | timestamp     | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED on update CURRENT_TIMESTAMP |
-// | image
+///modification to the createRoom
+
+///find room by id
+
+//updateRoom
+
+//Delete room
+

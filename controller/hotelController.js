@@ -85,3 +85,6 @@ module.exports.deleteHotel=async(req,res,next)=>{
 		return next(new errorHandling(error.statusCode||500 ,error.message))
 	}
 }
+
+
+//findHotelByID
