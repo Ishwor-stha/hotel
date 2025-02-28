@@ -63,3 +63,22 @@ module.exports.updateHotel=async (req,res,next)=>{
 		return next(new errorHandling(error.statusCode ||500,error.message));
 	}
 }
+
+module.exports.deleteHotel=async(req,res,next)=>{
+	try{
+		if(req.user.role!=="admin")return next(new errorHandling(409,"You donot have enough permission to perform this task."));
+		const id=req.params.id.trim();
+		if(!id)return next(new errorHandling(400,"No id is given for hotel"));
+		if(isNaN(Number(id)))return next(new errorHandling(400,"Hotel id must be a number."));
+		const query=`DELETE FROM hotels WHERE id=?`
+		const deleteHotel=await connection.promise.query(query,id);
+		console.log(deleteHotel);
+		res.status(200).json({
+			status:true,
+			message:"Hotel deleted sucessfully"
+		})
+	}catch(error){
+
+		return next(new errorHandling(error.statusCode||500 ,error.message))
+	}
+}
