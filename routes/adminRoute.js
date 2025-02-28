@@ -6,6 +6,7 @@ Router.route("/create-admin").post(checkJwt,createAdmin)
 Router.route("/login").post(login)
 Router.route("/forget-password").post(forgetPassowrd)
 Router.route("/reset-password/:code").post(resetPassword)
+////get booking details of user
 
 
 

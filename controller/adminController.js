@@ -56,7 +56,7 @@ module.exports.getAll = async (req, res, next) => {
         // destructure the first index of the array
         let [data] = await connection.promise().query(query)
         // console.log(data);
-        if (data.length === 0) return next(new errorHandling(404, "No admin found in the database."));
+        if (data.length === 0) return next(new errorHa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ndling(404, "No admin found in the database."));
         res.status(200).json({
             "status": true,
             "total": data.length,
@@ -69,6 +69,7 @@ module.exports.getAll = async (req, res, next) => {
 
 module.exports.getOneAdmin=async(req,res,next)=>{
     try{
+        if (req.user.role !== process.env.arole) return next(new errorHandling(400, "You donot have permission to perform this action."))
         const id=req.params.id;
         if(!id)return next(new errorHandling(400,"No admin id is given as parameters"));
         if(isNaN(Number(id))) return next(new errorHandling(400,"Only number are accepted."));
@@ -97,7 +98,7 @@ module.exports.getOneAdmin=async(req,res,next)=>{
 // @endPoint:localhost:4000/api/admin/create-admin
 module.exports.createAdmin = async (req, res, next) => {
     try {
-        if (req.user.role !== process.env.arole) return next(new errorHandling(400, "You donot have permission to perform this action."))
+        if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You donot have permission to perform this action."))
         if (!req.body) return next(new errorHandling(400, "Fields are empty.Please fill out the fields."));
         const possibleFields = ["firstName", "lastName", "email", "phone","phone2", "password", "confirmPassword","dob","gender","address","country","city","zip"];
         const reqBodyField = Object.keys(req.body);
@@ -130,7 +131,7 @@ module.exports.createAdmin = async (req, res, next) => {
 }
 module.exports.updateAdmin=async(req,res,next)=>{
     try{
-        if(req.user.role !== "admin")return next(new errorHandling(409,"You donot have enough permission to perform this task."))
+        if(req.user.role !== process.env.arole)return next(new errorHandling(401,"You donot have enough permission to perform this task."))
         // from jwtVerify controller
         const id=req.user.id
         if(!id)return next(new errorHandling(409,"Please login first"))
