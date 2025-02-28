@@ -55,6 +55,7 @@ module.exports.getAll = async (req, res, next) => {
         // fetching data form database
         // destructure the first index of the array
         let [data] = await connection.promise().query(query)
+        // console.log(data);
         if (data.length === 0) return next(new errorHandling(404, "No admin found in the database."));
         res.status(200).json({
             "status": true,
@@ -62,10 +63,7 @@ module.exports.getAll = async (req, res, next) => {
             "admin list": data
         })
     } catch (error) {
-        return res.status(500).json({
-            "status": false,
-            "messsage": error.message || "Something went wrong"
-        })
+        return next(new errorHandling(error.statusCode||500,error.message))
     }
 }
 
