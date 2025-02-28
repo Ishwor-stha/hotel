@@ -2,9 +2,9 @@ const errorHandling = require("../utils/errorHandling")
 const {
     connection
 } = require("../db")
-// const {
-//     validateEmail
-// } = require("../utils/emailValidator")
+const {
+    validateEmail
+} = require("../utils/emailValidator")
 // const {
 //     isValidNepaliPhoneNumber
 // } = require("../utils/phNoValidation")
@@ -76,34 +76,7 @@ module.exports.chooseRoom = async (req, res, next) => {
         return next(new errorHandling(500, error.message));
     }
 }
-// module.exports.paymentDetails = (req, res, next) => {
-//     try {
-//         if (!req.session.booking_data) return next(new errorHandling(400, "Please fill out all the previous form."));
-//         if (req.session.booking_data["url"] !== "/api/user/choose-room") return next(new errorHandling(400, "Please fil out the previous form."));
-//         const missingFields = possibleFields.filter(field => !req.body[field]);
-//         if (missingFields.length > 0) {
-//             return next(new errorHandling(400, `Missing fields: ${missingFields.join(", ")}`));
-//         }
-//         for (const key in req.body) {
-//             if (key === "email") {
-//                 if (!validateEmail(req.body[key])) return next(new errorHandling(400, "Please enter valid email."));
-//             }
-//             if (key === "phone" || key == "mobile_phone") {
-//                 if (!isValidNepaliPhoneNumber(req.body["phone"]) || !isValidNepaliPhoneNumber(req.body["mobile_phone"])) return next(new errorHandling(400, "Please enter valid phone number."));
-//             }
-//             req.session.booking_data[key] = req.body[key];
-//         }
-        
-//         req.session.booking_data["userId"] = req.user.id;//from check jwt
-//         req.session.booking_data["url"] = req.originalUrl;
-//         res.status(200).json({
-//             "status": true,
-//             "message": "Payment details saved successfully."
-//         });
-//     } catch (error) {
-//         return next(new errorHandling(500, error.message));
-//     }
-// }
+
 
 // @desc:Controller to get the price and redirect to the  payment 
 // @method:POST
@@ -144,8 +117,43 @@ module.exports.book = async (req, res, next) => {
             });
         } catch (error) {
             return next(new errorHandling(500, "Error while processing payment"));
+
         }
     } catch (error) {
         return next(new errorHandling(500, error.message));
     }
 };
+
+
+module.exports.getBookingDataForAdmin=async(req,res,next)=>{
+    try{
+        if(req.user.role!=="admin")return next (new errorHandling(401,"You donot have enough permission to perform this task."));
+        const {email}=req.body.email 
+        if(!email || Object.keys(req.body.email).length===0)return next (new errorHandling(400,"Please provide email to get booking data."));
+        if(!validateEmail(email.trim()))return next (new errorHandling(400,"Please enter valid email address."));
+        const query= `SELECT id FROM users WHERE email=?`
+        const [userData]=await connection.promise().query(query,[email]);
+        res.status(200).json({
+            status:true,
+            message:" this is the booking data for admin "
+        })
+
+
+
+
+
+    }catch(error){
+        return next(new errorHandling(errro.statusCode ||500,error.message))
+    }
+}
+
+
+
+// module.exports.getBookingDataForUser=async(req,res,next)=>{
+//     try{
+       
+
+//     }catch(error){
+//         return next(new errorHandling(errro.statusCode ||500,error.message))
+//     }
+// }
