@@ -128,8 +128,8 @@ module.exports.book = async (req, res, next) => {
 module.exports.getBookingDataForAdmin=async(req,res,next)=>{
     try{
         if(req.user.role!=="admin")return next (new errorHandling(401,"You donot have enough permission to perform this task."));
-        const {email}=req.body.email 
-        if(!email || Object.keys(req.body.email).length===0)return next (new errorHandling(400,"Please provide email to get booking data."));
+        const email=req.body.email 
+        if(!email || Object.keys(req.body).length===0)return next (new errorHandling(400,"Please provide email to get booking data."));
         if(!validateEmail(email.trim()))return next (new errorHandling(400,"Please enter valid email address."));
         const queryForFetchingId= `SELECT id FROM users WHERE email=?`
         const [userData]=await connection.promise().query(queryForFetchingId,[email]);
@@ -138,8 +138,8 @@ module.exports.getBookingDataForAdmin=async(req,res,next)=>{
         const field=`check_in_date,check_out_date,guests,total_price,booking_date,arrival_time,number_of_room,transaction_status,transaction_uuid,transaction_code`
         const bookingDataQuery=`SELECT * from bookings WHERE user_id=?`
         const id=userData[0].id
-        const [getBokingData]=await connection.promise().query(bookingQuery,[id]) 
-        if(!booking_data || getBokingData.length===0)return next(new errorHandling(404,"No booking data found form this email."));
+        const [getBokingData]=await connection.promise().query(bookingDataQuery,[id]) 
+        if(!getBokingData || getBokingData.length===0)return next(new errorHandling(404,"No booking data found form this email."));
         res.status(200).json({
             status:true,
             message:getBokingData
@@ -147,6 +147,6 @@ module.exports.getBookingDataForAdmin=async(req,res,next)=>{
 
 
     }catch(error){
-        return next(new errorHandling(errro.statusCode ||500,error.message))
+        return next(new errorHandling(error.statusCode ||500,error.message))
     }
 }
