@@ -129,6 +129,8 @@ module.exports.createAdmin = async (req, res, next) => {
         return next(new errorHandling(500, error.message));
     }
 }
+
+
 module.exports.updateAdmin=async(req,res,next)=>{
     try{
         if(req.user.role !== process.env.arole)return next(new errorHandling(401,"You donot have enough permission to perform this task."))

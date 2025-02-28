@@ -150,14 +150,3 @@ module.exports.getBookingDataForAdmin=async(req,res,next)=>{
         return next(new errorHandling(errro.statusCode ||500,error.message))
     }
 }
-
-
-
-// module.exports.getBookingDataForUser=async(req,res,next)=>{
-//     try{
-       
-
-//     }catch(error){
-//         return next(new errorHandling(errro.statusCode ||500,error.message))
-//     }
-// }

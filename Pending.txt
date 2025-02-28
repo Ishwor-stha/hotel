@@ -1,4 +1,34 @@
+
+BOOKING CONTROLLER
+// module.exports.getBookingDataForUser=async(req,res,next)=>{
+//     try{
+       
+
+//     }catch(error){
+//         return next(new errorHandling(errro.statusCode ||500,error.message))
+//     }
+// }
+
+
+HOTEL CONTROLLER
+
 //findHotelByID
+
+
+
+ROOM CONTROLLER
+
+///modification to the createRoom
+
+///find room by id
+
+//updateRoom
+
+//Delete room
+
+
+
+USER CONTROLLER
 
 // module.exports.findUserById=(req,res,next)=>{
     

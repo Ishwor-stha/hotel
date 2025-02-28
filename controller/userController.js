@@ -217,15 +217,3 @@ module.exports.login = async (req, res, next) => {
         return next(new errorHandling(500, error.message));
     }
 }
-
-// module.exports.findUserById=(req,res,next)=>{
-    
-// }
-
-
-//module.exports.findUserByEmail 
-
-
-// module.exports.updaeUser=(req,res,next)=>{
-    
-// }

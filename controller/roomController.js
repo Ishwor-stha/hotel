@@ -30,13 +30,3 @@ module.exports.createRoom = async (req, res, next) => {
         return next(new errorHandling(error.statusCode || 500, error.message))
     }
 }
-
-
-///modification to the createRoom
-
-///find room by id
-
-//updateRoom
-
-//Delete room
-
