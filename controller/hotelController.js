@@ -86,6 +86,21 @@ module.exports.deleteHotel=async(req,res,next)=>{
 	}
 }
 
+module.exports.getAllHotels=async(req,res,next)=>{
+	try{
+		const query=`SELECT * FROM hotels`
+		const [hotels]=await connection.promise().query(query);
+		if(!hotels || hotels.length ===0)return next(new errorHandling(404,"Cannot find hotel."));
+		res.status(200).json({
+			status:true,
+			message:"Hotels fetched sucessfully.",
+			data:hotels
+		})
+
+	}catch(error){
+		next(new errorHandling(error.statusCode||500,"error"))
+	}
+}
 
 module.exports.findHotelByID=async(req,res,next)=>{
 	try{
@@ -97,7 +112,8 @@ module.exports.findHotelByID=async(req,res,next)=>{
 		if(!getHotelData || getHotelData.length ===0)return next(new errorHandling(404,"Cannot find hotel from given id."));
 		res.status(200).json({
 			status:true,
-			message:getHotelData
+			message:"Hotel fetched sucessfully.",
+			data:getHotelData
 		})
 
 	}catch(error){
