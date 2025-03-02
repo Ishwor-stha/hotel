@@ -18,11 +18,18 @@ const {
     createFullName
 } = require("../utils/createFullName")
 // const sendMail=require("../utils/sendMail")
-const {messageTemplate}=require("../utils/verificationMessage")
-const {sendMessage}=require("../utils/nodemailer")
-const {forgetPasswordMessage}=require("../utils/forgetTemplate")
-const {updateValidation}=require("../utils/updateValidation")
-
+const {
+    messageTemplate
+} = require("../utils/verificationMessage")
+const {
+    sendMessage
+} = require("../utils/nodemailer")
+const {
+    forgetPasswordMessage
+} = require("../utils/forgetTemplate")
+const {
+    updateValidation
+} = require("../utils/updateValidation")
 // @desc:Controller to create a new user
 // @method:POST
 // @endPoint:localhost:4000/api/user/create-user
@@ -52,22 +59,16 @@ module.exports.createUser = async (req, res, next) => {
             phone,
             confirmPassword
         } = req.body;
-
         const validationMessage = await doValidations(email, phone, phone2, password, confirmPassword);
-
         if (validationMessage) return next(new errorHandling(400, validationMessage));
-
-        const [checkUser]=await connection.promise().query("SELECT name FROM users WHERE email= ?",[email])
-
-        if(checkUser.length!==0)return next(new errorHandling(500, "Email address is already used.Please try another email."));
-
+        const [checkUser] = await connection.promise().query("SELECT name FROM users WHERE email= ?", [email])
+        if (checkUser.length !== 0) return next(new errorHandling(500, "Email address is already used.Please try another email."));
         const fullName = createFullName(firstName, middleName, lastName);
         // email duplication error
         // hash password
         const hashedPassword = bcrypt.hashSync(password, 10);
         const code = crypto.randomInt(100000, 1000000); // Generates number from 100000 to 999999
-        const sessionID=crypto.randomInt(100000, 1000000);
-        
+        const sessionID = crypto.randomInt(100000, 1000000);
         req.session.userData = {
             fullName: fullName,
             email: email,
@@ -81,16 +82,16 @@ module.exports.createUser = async (req, res, next) => {
             phone2: phone2,
             phone: phone,
             code: code,
-            sessionID:sessionID
+            sessionID: sessionID
         }
         const payload = {
             email: email,
-            sessionID:sessionID
+            sessionID: sessionID
         }
-        const message=messageTemplate(code,fullName,);
-        const subject="Verification code";
+        const message = messageTemplate(code, fullName, );
+        const subject = "Verification code";
         // await sendMail(next,message,email,fullName);
-        await sendMessage(res,email,subject,message)
+        await sendMessage(res, email, subject, message)
         const verificationToken = jwt.sign(payload, process.env.jwt_secret_key, {
             expiresIn: process.env.jwt_expiry
         });
@@ -108,21 +109,13 @@ module.exports.createUser = async (req, res, next) => {
             "message": "Code sent to your email"
         });
     } catch (error) {
-
-        
-        
         return next(new errorHandling(500, error.message));
     }
 }
-
-
-
-module.exports.veriyfyUser = async(req, res, next) => {
+module.exports.veriyfyUser = async (req, res, next) => {
     try {
-
         const code = req.body.code
         const token = req.cookies.verificationToken;
-
         if (!token) return next(new errorHandling(500, "Please fill up the form again."));
         if (!code) return next(new errorHandling(500, "Invalid code given.Please try again with valid code."));
         if (String(code).length != 6) return next(new errorHandling(500, "The code length must be 6.Please enter valid code"));
@@ -130,32 +123,28 @@ module.exports.veriyfyUser = async(req, res, next) => {
         let userDetails;
         try {
             userDetails = jwt.verify(token, process.env.jwt_secret_key);
-
         } catch (err) {
             res.clearCookie('verificationToken');
             return next(new errorHandling(403, "Please fill out the form again. The verification time is over."));
         }
-       
         if (userDetails.email !== req.session.userData.email || userDetails.sessionID !== req.session.userData.sessionID) {
             req.session.destroy((err) => {
                 if (err) return next(new errorHandling(500, "Something went wrong."));
             })
             return next(new errorHandling(500, "Oops something went wrong"));
         }
-        if (code !== req.session.userData.code ) return next(new errorHandling(404, "The code doesnot match.Please enter correct code."));
+        if (code !== req.session.userData.code) return next(new errorHandling(404, "The code doesnot match.Please enter correct code."));
         const values = [req.session.userData.fullName, req.session.userData.email, req.session.userData.dob, req.session.userData.gender, req.session.userData.address, req.session.userData.password, req.session.userData.phone, req.session.userData.phone2, req.session.userData.country, req.session.userData.city, req.session.userData.zip]
         // destroy the session
-         req.session.destroy((err) => {
-                if (err) return next(new errorHandling(500, "Something went wrong."));
-            })
-         // clear the verificationToken from the client
+        req.session.destroy((err) => {
+            if (err) return next(new errorHandling(500, "Something went wrong."));
+        })
+        // clear the verificationToken from the client
         res.clearCookie('verificationToken');
-
         // // mysql query
         const query = `INSERT INTO users (name, email, dob, gender, address, password, phone, phone2, country, city, zip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         // //inserting the user details in database
         const createUser = await connection.promise().query(query, values);
-       
         res.status(200).json({
             status: true,
             message: "Account verified sucessfully.Please login again."
@@ -164,8 +153,6 @@ module.exports.veriyfyUser = async(req, res, next) => {
         return next(new errorHandling(500, error.message));
     }
 }
-
-
 // @desc:Controller to login by user
 // @method:POST
 // @endPoint:localhost:4000/api/user/login
@@ -219,111 +206,117 @@ module.exports.login = async (req, res, next) => {
         return next(new errorHandling(500, error.message));
     }
 }
-
-
-module.exports.updateUser=async(req,res,next)=>{
-    try{
-        if(req.user.role!== "user")return next(new errorHandling(401,"You donot have enough permission to take this action."))
-        const userId=req.user.id
-        if(!userId)return next(new errorHandling(400,"Invalid user id.Please login again."))
-        if(isNaN(Number(userId)))return next(new errorHandling(400,"Invalid user id.Please login again."))
-        if(Object.keys(req.body).length===0)return next(new errorHandling(400,"Empty body field.Please fill up the form. "))
-
-        const possibleFields = ["firstName", "lastName", "email", "dob", "country", "gender", "city", "zip", "address", "password", "phone2", "phone", "confirmPassword"];
-        const bodyField=Object.keys(req.body).filter(field=> possibleFields.includes(field) && req.body[field]);
-
-        if(bodyField.length ===0)return next(new errorHandling(400,"Empty body field.Please fill up the form. "))
-        const validationMessage=updateValidation(req.body["email"],req.body["phone"],req.body["phone2"],req.body["password"],req.body["confirmPassword"])
-        if(validationMessage)return next (new errorHandling(400,validationMessage))
-        if(req.body["password"]){
-            const hashedPassword=bcrypt.hashSync(req.body["password"],10)
-            req.body["password"]=hashedPassword
+module.exports.updateUser = async (req, res, next) => {
+    try {
+        if (req.user.role !== "user") return next(new errorHandling(401, "You do not have enough permission to take this action."));
+        const userId = req.user.id;
+        if (!userId || isNaN(Number(userId))) return next(new errorHandling(400, "Invalid user ID. Please log in again."));
+        if (Object.keys(req.body).length === 0) return next(new errorHandling(400, "Empty body field. Please fill up the form."));
+        const possibleFields = ["firstName", "middleName", "lastName", "email", "dob", "country", "gender", "city", "zip", "address", "password", "phone2", "phone", "confirmPassword"];
+        const bodyField = Object.keys(req.body).filter(field => possibleFields.includes(field) && req.body[field]);
+        if (bodyField.length === 0) return next(new errorHandling(400, "Empty body field. Please fill up the form."));
+        // Name update logic
+        let name = "";
+        if (req.body["firstName"] || req.body["middleName"] || req.body["lastName"]) {
+            const [dbName] = await connection.promise().query(`SELECT name FROM users WHERE id = ?`, [userId]);
+            if (dbName.length > 0) {
+                let nameArray = dbName[0].name.split(" ");
+                // Ensure nameArray has at least 3 elements (First, Middle, Last)
+                while (nameArray.length < 3) {
+                    nameArray.push("");
+                }
+                // Extract user input
+                const fName = req.body["firstName"];
+                const mName = req.body["middleName"];
+                const lName = req.body["lastName"];
+                // Construct the new name
+                name = `${fName ? fName : nameArray[0]} ${mName ? mName : nameArray[1]} ${lName ? lName : nameArray[2]}`.trim();
+            }
         }
-
-        let fieldWithQuestionMark=[]
-        const values=[]
+        const validationMessage = updateValidation(req.body["email"], req.body["phone"], req.body["phone2"], req.body["password"], req.body["confirmPassword"]);
+        if (validationMessage) return next(new errorHandling(400, validationMessage));
+        // Hash password if it exists
+        if (req.body["password"]) {
+            req.body["password"] = bcrypt.hashSync(req.body["password"], 10);
+        }
+        let fieldWithQuestionMark = [];
+        let values = [];
         bodyField.forEach(field => {
             if (field === "confirmPassword") return; // Skip 'confirmPassword'
-
+            if (["firstName", "middleName", "lastName"].includes(field)) {
+                if (!fieldWithQuestionMark.includes("name=?")) {
+                    fieldWithQuestionMark.push("name=?");
+                    values.push(name);
+                }
+            } else {
                 fieldWithQuestionMark.push(`${field}=?`);
                 values.push(req.body[field]);
+            }
         });
-
-        const query=`UPDATE users SET ${fieldWithQuestionMark.join(",")} where id=${userId}`
-
-        const updateUser=await connection.promise().query(query,values)
-        if(updateUser[0]["affectedRows"]===0)return next(new errorHandling(500,"Cannot update the deatils.Please try again later."))
-        
+        // Secure parameterized query
+        const query = `UPDATE users SET ${fieldWithQuestionMark.join(", ")} WHERE id = ?`;
+        values.push(userId); // Ensure userId is added safely
+        const [updateUser] = await connection.promise().query(query, values);
+        if (updateUser.affectedRows === 0) return next(new errorHandling(500, "Cannot update the details. Please try again later."));
         res.status(200).json({
-            status:true,
-            message:"Details updated sucessfully."
+            status: true,
+            message: "Details updated successfully."
+        });
+    } catch (error) {
+        return next(new errorHandling(error.statusCode || 500, error.message));
+    }
+};
+module.exports.forgetPassword = async (req, res, next) => {
+    try {
+        const {
+            email
+        } = req.body
+        if (!email) return next(new errorHandling(400, "Please enter email."));
+        if (!validateEmail(email)) return next(new errorHandling(400, "Please enter valid email address."));
+        const queryForFetching = `SELECT name FROM users WHERE email=?`
+        const [data] = await connection.promise().query(queryForFetching, [email]);
+        if (data[0].length === 0) return next(new errorHandling(404, "No user found from this email address.Please reenter a email."));
+        const token = crypto.randomBytes(8).toString('hex')
+        const link = `${process.env.domain}api/user/reset-password/${token}`
+        const name = data[0].name;
+        const message = forgetPasswordMessage(link, name);
+        const subject = "Reset link";
+        await sendMessage(res, email, subject, message);
+        const query = `UPDATE users SET code = ? WHERE email = ?`;
+        await connection.promise().query(query, [token, email]);
+        res.status(200).json({
+            status: true,
+            message: "Reset link is sent to your email"
         })
-
-
-    }catch(error){
-        return next(new errorHandling(error.statusCode || 500,error.message))
+    } catch (error) {
+        const quer = `UPDATE users SET code = ? WHERE email = ?`;
+        await connection.promise().query(quer, [null, email])
+        return next(new errorHandling(error.statusCode || 500, error.message));
     }
 }
-
-
-
-module.exports.forgetPassword=async (req,res,next)=>{
-    try{
-        const {email}=req.body
-        if(!email)return next(new errorHandling(400,"Please enter email."));
-        if(!validateEmail(email))return next(new errorHandling(400,"Please enter valid email address."));
-        const queryForFetching=`SELECT name FROM users WHERE email=?`
-        const [data]=await connection.promise().query(queryForFetching,[email]);
-        if(data[0].length===0)return next(new errorHandling(404,"No user found from this email address.Please reenter a email."));
-        const token=crypto.randomBytes(8).toString('hex')
-        const link=`${process.env.domain}api/user/reset-password/${token}`
-        const name=data[0].name;
-        const message=forgetPasswordMessage(link,name);
-        const subject="Reset link";
-
-        await sendMessage(res,email,subject,message);
-        const query=`UPDATE users SET code = ? WHERE email = ?`;
-        await connection.promise().query(query,[token,email]);
-
+module.exports.resetPassword = async (req, res, next) => {
+    try {
+        const userCode = req.params.code
+        const {
+            email,
+            password,
+            confirmPassword
+        } = req.body
+        if (!userCode) return next(new errorHandling(400, "Oops something went wrong"));
+        if (!email || !password || !confirmPassword) return next(new errorHandling(400, "Email,password or confirmPassword is missng please fill out the form again."));
+        if (!validateEmail(email)) return next(new errorHandling(400, "Please enter valid email address"));
+        if (password !== confirmPassword) return next(new errorHandling(400, "Confirm password and password must be same."));
+        const [query] = await connection.promise().query(`SELECT email,code FROM users WHERE email=?`, [email]);
+        if (!query || query[0].length === 0) return next(new errorHandling(400, "The code or email is not found.Please try again."));
+        if (!query[0].code) return next(new errorHandling(400, "Something went wrong.Please try to resend code again"));
+        if (query[0].code !== userCode) return next(new errorHandling(400, "Please enter correct code."));
+        const hashedPassword = bcrypt.hashSync(password, 10);
+        await connection.promise().query(`UPDATE admin SET password = ?,code=? WHERE email = ?`, [hashedPassword, null, email])
         res.status(200).json({
-            status:true,
-            message:"Reset link is sent to your email"
+            status: true,
+            message: "Password updated sucessfully"
         })
-
-
-
-    }catch(error){
-        const quer=`UPDATE users SET code = ? WHERE email = ?`;
-        await connection.promise().query(quer,[null,email])
-
-        return next(new errorHandling(error.statusCode ||500,error.message));
-    }
-}
-
-
-module.exports.resetPassword=async(req,res,next)=>{
-    try{
-        const userCode=req.params.code
-        const {email,password,confirmPassword}=req.body
-        if(!userCode)return next(new errorHandling(400,"Oops something went wrong"));
-        if(!email || !password || !confirmPassword)return next(new errorHandling(400,"Email,password or confirmPassword is missng please fill out the form again."));
-        if(!validateEmail(email))return next(new errorHandling(400,"Please enter valid email address"));
-        if(password !==confirmPassword)return next(new errorHandling(400,"Confirm password and password must be same."));
-        const [query]=await connection.promise().query(`SELECT email,code FROM users WHERE email=?`,[email]);
-        if(!query || query[0].length ===0)return next(new errorHandling(400,"The code or email is not found.Please try again."));
-        if(!query[0].code) return next(new errorHandling(400,"Something went wrong.Please try to resend code again"));
-        if(query[0].code !==userCode)return next(new errorHandling(400,"Please enter correct code."));
-        const hashedPassword=bcrypt.hashSync(password,10);
-
-
-        await connection.promise().query(`UPDATE admin SET password = ?,code=? WHERE email = ?`,[hashedPassword,null,email])
-        res.status(200).json({
-        
-            status:true,
-            message:"Password updated sucessfully"
-        })
-        
-    }catch(error){
-        next(new errorHandling(error.statusCode||500,error.message));
+    } catch (error) {
+        next(new errorHandling(error.statusCode || 500, error.message));
     }
 }
