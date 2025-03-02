@@ -3,7 +3,7 @@ const {isValidNepaliPhoneNumber}=require("./phNoValidation")
 module.exports.updateValidation = (email, phone, phone2, password, confirmPassword) => {
 
     if (email !==undefined) {
-        if (!validateEmail(req.body["email"])) return "Please enter valid email address."
+        if (!validateEmail(email)) return "Please enter valid email address."
     }
     if (phone !==undefined) {
         if (!isValidNepaliPhoneNumber(phone)) return "Please enter valid phone number."

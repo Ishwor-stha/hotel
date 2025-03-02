@@ -224,13 +224,14 @@ module.exports.login = async (req, res, next) => {
 module.exports.updateUser=async(req,res,next)=>{
     try{
         if(req.user.role!== "user")return next(new errorHandling(401,"You donot have enough permission to take this action."))
-        const userId=req.user.id.trim()
+        const userId=req.user.id
         if(!userId)return next(new errorHandling(400,"Invalid user id.Please login again."))
-        if(isNan(Number(userId)))return next(new errorHandling(400,"Invalid user id.Please login again."))
+        if(isNaN(Number(userId)))return next(new errorHandling(400,"Invalid user id.Please login again."))
         if(Object.keys(req.body).length===0)return next(new errorHandling(400,"Empty body field.Please fill up the form. "))
 
         const possibleFields = ["firstName", "lastName", "email", "dob", "country", "gender", "city", "zip", "address", "password", "phone2", "phone", "confirmPassword"];
         const bodyField=Object.keys(req.body).filter(field=> possibleFields.includes(field) && req.body[field]);
+
         if(bodyField.length ===0)return next(new errorHandling(400,"Empty body field.Please fill up the form. "))
         const validationMessage=updateValidation(req.body["email"],req.body["phone"],req.body["phone2"],req.body["password"],req.body["confirmPassword"])
         if(validationMessage)return next (new errorHandling(400,validationMessage))
@@ -238,15 +239,21 @@ module.exports.updateUser=async(req,res,next)=>{
             const hashedPassword=bcrypt.hashSync(req.body["password"],10)
             req.body["password"]=hashedPassword
         }
+
         let fieldWithQuestionMark=[]
-        const values=bodyField.map(field=>{
-            fieldWithQuestionMark.push(`${field}=?`)
-            return req.body[field]
-        })
+        const values=[]
+        bodyField.forEach(field => {
+            if (field === "confirmPassword") return; // Skip 'confirmPassword'
+
+                fieldWithQuestionMark.push(`${field}=?`);
+                values.push(req.body[field]);
+        });
+
         const query=`UPDATE users SET ${fieldWithQuestionMark.join(",")} where id=${userId}`
-        console.log(query);
-        // const updateUser=await connection.promise().query(query,values)
-        // if(updateUser[0]["affectedRows"]===0)return next(new errorHandling(500,"Cannot update the deatils.Please try again later."))
+
+        const updateUser=await connection.promise().query(query,values)
+        if(updateUser[0]["affectedRows"]===0)return next(new errorHandling(500,"Cannot update the deatils.Please try again later."))
+        
         res.status(200).json({
             status:true,
             message:"Details updated sucessfully."
