@@ -219,14 +219,14 @@ module.exports.login = async (req, res, next) => {
     }
 }
 
-module.exports.forgetPassowrd=async (req,res,next)=>{
+module.exports.forgetPassword=async (req,res,next)=>{
     try{
         const {email}=req.body
         if(!email)return next(new errorHandling(400,"Please enter email."));
         if(!validateEmail(email))return next(new errorHandling(400,"Please enter valid email address."));
         const queryForFetching=`SELECT name FROM users WHERE email=?`
         const [data]=await connection.promise().query(queryForFetching,[email]);
-        if(data.length===0)return next(new errorHandling(404,"No user found from this email address.Please reenter a email."));
+        if(data[0].length===0)return next(new errorHandling(404,"No user found from this email address.Please reenter a email."));
         const token=crypto.randomBytes(8).toString('hex')
         const link=`${process.env.domain}api/user/reset-password/${token}`
         const name=data[0].name;
@@ -249,5 +249,33 @@ module.exports.forgetPassowrd=async (req,res,next)=>{
         await connection.promise().query(quer,[null,email])
 
         return next(new errorHandling(error.statusCode ||500,error.message));
+    }
+}
+
+
+module.exports.resetPassword=async(req,res,next)=>{
+    try{
+        const userCode=req.params.code
+        const {email,password,confirmPassword}=req.body
+        if(!userCode)return next(new errorHandling(400,"Oops something went wrong"));
+        if(!email || !password || !confirmPassword)return next(new errorHandling(400,"Email,password or confirmPassword is missng please fill out the form again."));
+        if(!validateEmail(email))return next(new errorHandling(400,"Please enter valid email address"));
+        if(password !==confirmPassword)return next(new errorHandling(400,"Confirm password and password must be same."));
+        const [query]=await connection.promise().query(`SELECT email,code FROM users WHERE email=?`,[email]);
+        if(!query || query[0].length ===0)return next(new errorHandling(400,"The code or email is not found.Please try again."));
+        if(!query[0].code) return next(new errorHandling(400,"Something went wrong.Please try to resend code again"));
+        if(query[0].code !==userCode)return next(new errorHandling(400,"Please enter correct code."));
+        const hashedPassword=bcrypt.hashSync(password,10);
+
+
+        await connection.promise().query(`UPDATE admin SET password = ?,code=? WHERE email = ?`,[hashedPassword,null,email])
+        res.status(200).json({
+        
+            status:true,
+            message:"Password updated sucessfully"
+        })
+        
+    }catch(error){
+        next(new errorHandling(error.statusCode||500,error.message));
     }
 }

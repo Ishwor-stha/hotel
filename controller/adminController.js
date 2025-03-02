@@ -223,7 +223,7 @@ module.exports.login = async (req, res, next) => {
     }
 }
 
-module.exports.forgetPassowrd=async (req,res,next)=>{
+module.exports.forgetPassword=async (req,res,next)=>{
     try{
         const {email}=req.body
         if(!email)return next(new errorHandling(400,"Please enter email."));
