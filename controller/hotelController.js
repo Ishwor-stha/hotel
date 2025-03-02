@@ -85,3 +85,23 @@ module.exports.deleteHotel=async(req,res,next)=>{
 		return next(new errorHandling(error.statusCode||500 ,error.message))
 	}
 }
+
+
+module.exports.findHotelByID=async(req,res,next)=>{
+	try{
+		const hotelId=req.params.hotelId.trim();
+		if(!hotelId)return next(new errorHandling(400,"Invalid hotel id given. "));
+		if(isNaN(Number(hotelId)))return next (new errorHandling(400 ,"Invalid hotel id is given."));
+		const query=`SELECT * FROM hotels WHERE id=?`
+		const [getHotelData]=await connection.promise().query(query,[hotelId]);
+		if(!getHotelData || getHotelData.length ===0)return next(new errorHandling(404,"Cannot find hotel from given id."));
+		res.status(200).json({
+			status:true,
+			message:getHotelData
+		})
+
+	}catch(error){
+		return next(new errorHandling(error.statusCode||500,error.message));
+
+	}
+}
