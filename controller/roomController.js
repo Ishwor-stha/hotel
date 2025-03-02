@@ -17,10 +17,10 @@ module.exports.createRoom = async (req, res, next) => {
         	return req.body[field]
         })
 
-		const query=`INSERT INTO rooms(${possibleFields.join(",")} VALUES (${questionMark.join(",")})` //ie INSERT INTO rooms(room_type,price_per_night,capacity,features,images VALUES (?,?,?,?,?
+		const query=`INSERT INTO rooms(${possibleFields.join(",")} VALUES (${questionMark.join(",")})` //ie INSERT INTO rooms(room_type,price_per_night,capacity,features,images VALUES (?,?,?,?,?)
 		//  console.log(values);
 		// console.log(query);
-		// const upload=await connection.promise().query(query,values);
+		const uploadRoomData=await connection.promise().query(query,values);
 
         res.status(200).json({
             status: true,

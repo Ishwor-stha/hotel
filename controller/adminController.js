@@ -249,7 +249,7 @@ module.exports.forgetPassowrd=async (req,res,next)=>{
 
 
     }catch(error){
-        const quer=`UPDATE users SET code = ? WHERE email = ?`;
+        const quer=`UPDATE admin SET code = ? WHERE email = ?`;
         await connection.promise().query(quer,[null,email])
 
         return next(new errorHandling(error.statusCode ||500,error.message));

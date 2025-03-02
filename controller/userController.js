@@ -20,6 +20,7 @@ const {
 // const sendMail=require("../utils/sendMail")
 const {messageTemplate}=require("../utils/verificationMessage")
 const {sendMessage}=require("../utils/nodemailer")
+const {forgetPasswordMessage}=require("../utils/forgetTemplate")
 
 // @desc:Controller to create a new user
 // @method:POST
@@ -215,5 +216,38 @@ module.exports.login = async (req, res, next) => {
         });
     } catch (error) {
         return next(new errorHandling(500, error.message));
+    }
+}
+
+module.exports.forgetPassowrd=async (req,res,next)=>{
+    try{
+        const {email}=req.body
+        if(!email)return next(new errorHandling(400,"Please enter email."));
+        if(!validateEmail(email))return next(new errorHandling(400,"Please enter valid email address."));
+        const queryForFetching=`SELECT name FROM users WHERE email=?`
+        const [data]=await connection.promise().query(queryForFetching,[email]);
+        if(data.length===0)return next(new errorHandling(404,"No user found from this email address.Please reenter a email."));
+        const token=crypto.randomBytes(8).toString('hex')
+        const link=`${process.env.domain}api/user/reset-password/${token}`
+        const name=data[0].name;
+        const message=forgetPasswordMessage(link,name);
+        const subject="Reset link";
+
+        await sendMessage(res,email,subject,message);
+        const query=`UPDATE users SET code = ? WHERE email = ?`;
+        await connection.promise().query(query,[token,email]);
+
+        res.status(200).json({
+            status:true,
+            message:"Reset link is sent to your email"
+        })
+
+
+
+    }catch(error){
+        const quer=`UPDATE users SET code = ? WHERE email = ?`;
+        await connection.promise().query(quer,[null,email])
+
+        return next(new errorHandling(error.statusCode ||500,error.message));
     }
 }

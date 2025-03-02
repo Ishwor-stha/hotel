@@ -8,7 +8,7 @@ HOTEL CONTROLLER
 
 ROOM CONTROLLER
 
-///modification to the createRoom
+///modification to the createRoom (check the uploadRoomData if the data is inserted or not lie !uoloadRoomData)
 
 ///find room by id
 
