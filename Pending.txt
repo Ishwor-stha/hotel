@@ -19,9 +19,9 @@ ROOM CONTROLLER
 
 
 USER CONTROLLER
-//forgetPassword
-//resetPassword
-////update user
+//forgetPassword--
+//resetPassword--
+////update user--
 
 // module.exports.findUserById=(req,res,next)=>{
     
@@ -31,6 +31,3 @@ USER CONTROLLER
 //module.exports.findUserByEmail 
 
 
-// module.exports.updaeUser=(req,res,next)=>{
-    
-// }

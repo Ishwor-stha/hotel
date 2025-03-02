@@ -15,6 +15,7 @@ const {doValidations}=require("../utils/allValidation");
 const{forgetPasswordMessage}=require("../utils/forgetTemplate")
 const crypto=require("crypto")
 const {sendMessage}=require("../utils/nodemailer");
+const {updateValidation}=require("../utils/updateValidation")
 
 // @desc:Controller to check the the token is valid or not
 module.exports.checkJwt = (req, res, next) => {
@@ -146,21 +147,9 @@ module.exports.updateAdmin=async(req,res,next)=>{
         // check if the req.body object has the keys which matches the the option in possible field and also checks the keys is empty or not 
         const validField=Object.keys(req.body).filter(field=> possibleFields.includes(field))
         
-        if(validField.includes("email")){
-            if(!validateEmail(req.body["email"])) return next(new errorHandling(400,"Please enter valid email address."))
-
-        } 
-        if(validField.includes("phone") ){
-            if(!isValidNepaliPhoneNumber(req.body["phone"]))return next(new errorHandling(400,"Please enter valid phone number."))
-
-        }
-        if(validField.includes("phone2")){
-            if(!isValidNepaliPhoneNumber(req.body["phone2"]))return next(new errorHandling(400,"Please enter valid phone number."))
-
-        }
-        if(validField.includes("password")){
-            if(req.body[password] !==req.body["confirmPassword"])return next(new errorHandling(400,"Password doesnot match with confirm password."))
-
+       const validationMessage=updateValidation(req.body["email"],req.body["phone"],req.body["phone2"],req.body["password"],req.body["confirmPassword"])
+       if(validationMessage)return next(new errorHandling(400,validationMessage));
+        if(req.body["password"]){
             const hashedPassword=bcrypt.hashSync(req.body["password"],10)
             req.body["password"]=hashedPassword        
         }
