@@ -210,18 +210,19 @@ module.exports.login = async (req, res, next) => {
  module.exports.findUserById=async(req,res,next)=>{
     try{
         if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You do not have enough permission to take this action."));
-        const userId = req.params.userId;
-        if(isNaN(Number(userId)))return next (errorHandling(400,"Invalid user id.Please enter valid user id."));
+        let userId = req.params.userId;
+        // if the user gives only space in the params then throw error
+        if(userId.split(" ")[0]==="")return next (new errorHandling(400,"Invalid user id.Please enter valid user id."));
+        if(isNaN(Number(userId)))return next (new errorHandling(400,"Invalid user id.Please enter valid user id."));
         const fieldName=`name,email,dob,gender,address,country,zip,phone,phone2`
         const query=`SELECT ${fieldName} FROM users WHERE id=?`
         const [getUser]=await connection.promise().query(query,[userId])
         if(getUser.length===0)return next(new errorHandling(404,"Cannot get user from this id please try valid id"))
-        console.log(getUser);
         res.status(200).json({
-            message:"done"
+            status:true,
+            message:"User details fetched sucessfully.",
+            userData:getUser[0]
         })
-
-
 
     }catch(error){
         return next(new errorHandling(error.statusCode || 500,error.message))
