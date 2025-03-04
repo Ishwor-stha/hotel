@@ -26,4 +26,31 @@ module.exports.uploadRating=async(req,res,next)=>{
 	}
 }
 
-module.exports.updateRating
+module.exports.updateRating=async(req,res,next)=>{
+	try{
+		if(req.user.role !=="user") return next(new errorHandling(401,"You are not authorized to perform this task."))
+		if(Object.keys(req.body).length===0)return next(new errorHandling(400,"Cannot send empty body."))
+		const userId=req.user.id
+		const hotelId=req.body.hotelId
+		const possibleFields=["score","reviewMessage"]
+		const check=Object.keys(req.body).filter(field=> possibleFields.includes(field) && req.body[field].trim())
+		if(!hotelId)return next(new errorHandling(400,"Cannot get hotel id."))
+		if(check.length===0)return next(new errorHandling(400,"Cannot update the ratings."))
+		const values=[]
+		const fieldName=check.map(field =>{
+			values.push(req.body[field])
+			return `${field}=?`
+		})	
+ 		const updateQuery = `UPDATE ratings SET ${fieldName.join(',')} WHERE user_id = ? AND hotel_id = ?`
+ 		
+ 		const updateRating=await connection.promise().query(updateQuery,[values,userId,hotelId])
+        if(updateRating[0]["affectedRows"]===0)return next(new errorHandling(500,"Cannot update the review.Please try again later."))
+
+		res.status(200).json({
+			status:true,
+			message:"Review updated sucessfully"
+		})
+	}catch(error){
+		return next(new errorHandling(error.statusCode ||500,error.message))
+	}
+}
