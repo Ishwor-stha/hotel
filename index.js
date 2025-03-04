@@ -13,6 +13,7 @@ const logout=require("./routes/logoutRoute")
 const roomRoute=require("./routes/roomRoute")
 const paymentRoute=require("./routes/paymentRoute")
 const hotelRoute=require("./routes/hotelRoute")
+const ratingRoute=require("./routes/ratingRoutes")
 
 const session=require("express-session")
 dotenv.config()
@@ -38,6 +39,7 @@ app.use("/api/user/booking",bookingRoute)
 app.use("/api/user/payment",paymentRoute)
 app.use("/api/hotel",hotelRoute)
 app.use("/api/rooms",roomRoute)
+app.use("/api/rating",ratingRoute)
 
 
 

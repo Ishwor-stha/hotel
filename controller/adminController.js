@@ -57,7 +57,7 @@ module.exports.getAll = async (req, res, next) => {
         // destructure the first index of the array
         let [data] = await connection.promise().query(query)
         // console.log(data);
-        if (data.length === 0) return next(new errorHa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ndling(404, "No admin found in the database."));
+        if (data.length === 0) return next(new errorHandling(404, "No admin found in the database."));
         res.status(200).json({
             "status": true,
             "total": data.length,
