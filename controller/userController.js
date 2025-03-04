@@ -229,6 +229,27 @@ module.exports.login = async (req, res, next) => {
     }
     
  }
+module.exports.findUserByEmail=async(req,res,next)=>{
+    try{
+        if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You do not have enough permission to take this action."));
+        let userEmail= req.body.userEmail
+        if(!userEmail.trim())return next(new errorHandling(400,"No email is given please provide email address."));
+        if(!validateEmail(userEmail))return next(new errorHandling(400,"Email is not valid please enter valid email address"));
+        const fieldName=`name,email,dob,gender,address,country,zip,phone,phone2`
+        const query=`SELECT ${fieldName} FROM users WHERE email=?`
+        const [getUser]=await connection.promise().query(query,[userEmail])
+        if(getUser.length===0)return next(new errorHandling(404,"Cannot get user from this email please try valid email address."))
+        res.status(200).json({
+            status:true,
+            message:"User details fetched sucessfully.",
+            userData:getUser[0]
+        })
+
+    }catch(error){
+        return next(new errorHandling(error.statusCode || 500,error.message))
+    }
+    
+ }
 
 module.exports.updateUser = async (req, res, next) => {
     try {

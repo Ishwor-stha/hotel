@@ -23,9 +23,7 @@ USER CONTROLLER
 //resetPassword--
 ////update user--
 
-// module.exports.findUserById=(req,res,next)=>{
-    
-// }
+// module.exports.findUserById --
 
 
 //module.exports.findUserByEmail 
