@@ -18,9 +18,9 @@ module.exports.createRoom = async (req, res, next) => {
         })
 
 		const query=`INSERT INTO rooms(${possibleFields.join(",")} VALUES (${questionMark.join(",")})` //ie INSERT INTO rooms(room_type,price_per_night,capacity,features,images VALUES (?,?,?,?,?)
-		//  console.log(values);
-		// console.log(query);
+
 		const uploadRoomData=await connection.promise().query(query,values);
+        if(uploadRoomData[0]["affectedRows"]===0)return next(new errorHandling(500,"Cannot upload the data.Please try again later."))
 
         res.status(200).json({
             status: true,

@@ -26,6 +26,12 @@ USER CONTROLLER
 // module.exports.findUserById --
 
 
-//module.exports.findUserByEmail 
+//module.exports.findUserByEmail----
+
+
+
+
+
+roomController
 
 
