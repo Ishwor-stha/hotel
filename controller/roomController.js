@@ -7,7 +7,7 @@ module.exports.createRoom = async (req, res, next) => {
         if(req.user.role!==process.env.arole)return next(new errorHandling(401,"You donot have enough permission to perform this task."));
 
     	if(!req.body ||Object.keys(req.body).length ===0)return next(new errorHandling(400,"Empty body please send data ."))
-    	const possibleFields=["hotel_id","room_type","price_per_night","capacity","features","images","availability"]
+    	const possibleFields=["hotel_id","room_type","price_per_night","capacity","features","image","availability"]
         const bodyField=Object.keys(req.body)  
     	const checkFields=possibleFields.filter(field=> !bodyField.includes(field) || !req.body[field] );
     	// console.log(checkFields)
@@ -17,9 +17,12 @@ module.exports.createRoom = async (req, res, next) => {
         	questionMark.push("?")
         	return req.body[field]
         })
+        // console.log(possibleFields.join(","));
+        // console.log(questionMark.join(","));
+        // console.log(values);
 
-		const query=`INSERT INTO rooms(${possibleFields.join(",")} VALUES (${questionMark.join(",")})` //ie INSERT INTO rooms(room_type,price_per_night,capacity,features,images VALUES (?,?,?,?,?)
-
+		const query=`INSERT INTO rooms(${possibleFields.join(",")}) VALUES (${questionMark.join(",")})` //ie INSERT INTO rooms(room_type,price_per_night,capacity,features,images VALUES (?,?,?,?,?)
+        console.log(query)
 		const uploadRoomData=await connection.promise().query(query,values);
         if(uploadRoomData[0]["affectedRows"]===0)return next(new errorHandling(500,"Cannot upload the data.Please try again later."))
 
