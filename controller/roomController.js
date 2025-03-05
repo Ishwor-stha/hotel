@@ -76,6 +76,7 @@ module.exports.getAllRooms=async(req,res,next)=>{
         if(rooms.length===0)return next(new errorHandling(404,"There is no rooms presented on the database."))
         // console.log(rooms)
         res.status(200).json({
+            status:true,
             totalRooms:rooms.length,
             message:"Rooms fetched sucessfully.",
             rooms
@@ -86,3 +87,23 @@ module.exports.getAllRooms=async(req,res,next)=>{
     }
 }
 
+
+module.exports.getRoomById=async(req,res,next)=>{
+    try{
+        const roomId =req.params.roomId;
+        if(!roomId || isNaN(Number(roomId)))return next(new errorHandling(400,"Invalid room id."));
+        const query=`SELECT * FROM rooms WHERE id=?`
+        const [room]=await connection.promise().query(query,[roomId])
+        // console.log(room)
+        if(room.length===0)return next(new errorHandling(404,"No room found from ."))
+        res.status(200).json({
+            status:"true",
+            message:"Room fetched sucessfully.",
+            roomDetails:room[0]
+
+        })
+
+    }catch(error){
+        return next(new errorHandling(error.statusCode ||500,error.message))
+    }
+}
