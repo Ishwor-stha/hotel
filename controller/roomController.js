@@ -107,3 +107,13 @@ module.exports.getRoomById=async(req,res,next)=>{
         return next(new errorHandling(error.statusCode ||500,error.message))
     }
 }
+
+
+module.exports.deleteRoomById=async(req,res,next)=>{
+    try{
+        if(req.user.role!==process.env.arole)return next(new errorHandling(401,"You are not authorized to perform this task."))
+    }catch(error){
+        return next(new errorHandling(error.statusCode ||500,error.message))
+
+    }
+}
