@@ -68,3 +68,21 @@ module.exports.updateRoom=async (req, res, next)=>{
         return next(new errorHandling(error.statusCode || 500,error.message))
     }
 }
+
+module.exports.getAllRooms=async(req,res,next)=>{
+    try{
+        const query=`SELECT * FROM rooms`
+        const [rooms]=await connection.promise().query(query)
+        if(rooms.length===0)return next(new errorHandling(404,"There is no rooms presented on the database."))
+        // console.log(rooms)
+        res.status(200).json({
+            totalRooms:rooms.length,
+            message:"Rooms fetched sucessfully.",
+            rooms
+        })
+
+    }catch(error){
+        return next(new errorHandling(error.statusCode ||500,error.message))
+    }
+}
+

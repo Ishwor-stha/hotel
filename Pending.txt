@@ -33,5 +33,7 @@ USER CONTROLLER
 
 
 roomController
-
+--all room --
+--room by id
+--delete room  
 
