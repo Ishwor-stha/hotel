@@ -45,10 +45,10 @@ app.use("/api/rating",ratingRoute)
 
 
 
-
 connect()
 //Handle any unhandled routes with a 404 error
 app.all("*", (req, res) => {
+    // console.log(req.originalUrl)
     res.status(404).json({
         status: "fail",
         message: "Invalid website path"
