@@ -114,7 +114,7 @@ module.exports.deleteRoomById=async(req,res,next)=>{
         if(req.user.role!==process.env.arole)return next(new errorHandling(401,"You are not authorized to perform this task."))
         const roomId =req.params.roomId;
         if(!roomId || isNaN(Number(roomId)))return next(new errorHandling(400,"Invalid room id."));
-        const query=`DELETE FROM rooms WHERE  AND hotel_id=?`
+        const query=`DELETE FROM rooms WHERE id=?`
         const deleteRoom=await connection.promise().query(query,[roomId])
         if(deleteRoom[0]["affectedRows"]===0)return next(new errorHandling(500,"Cannot delete the room.Please try again later."))
         res.status(200).json({
