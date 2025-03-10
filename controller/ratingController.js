@@ -87,7 +87,7 @@ module.exports.getRatings=async(req,res,next)=>{
 		if(rating.length==0)return next(new errorHandling(400,"Cannot get rating details."))
 		res.status(200).json({
 			status:true,
-			total:rating[0].length
+			total:rating[0].length,
 			message:"Rating fetched sucessfully",
 			data:rating[0]
 		})
