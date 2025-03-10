@@ -67,7 +67,9 @@ module.exports.getAll = async (req, res, next) => {
         return next(new errorHandling(error.statusCode||500,error.message))
     }
 }
-
+// @desc:Controller to get only one admin 
+// @method:GET
+// @endPoint:localhost:4000/api/admin/get-one-admin/:id
 module.exports.getOneAdmin=async(req,res,next)=>{
     try{
         if (req.user.role !== process.env.arole) return next(new errorHandling(400, "You donot have permission to perform this action."))
@@ -94,6 +96,7 @@ module.exports.getOneAdmin=async(req,res,next)=>{
 
     }
 }
+
 // @desc:Controller to create a new admin
 // @method:POST
 // @endPoint:localhost:4000/api/admin/create-admin
@@ -131,7 +134,9 @@ module.exports.createAdmin = async (req, res, next) => {
     }
 }
 
-
+// @desc:Controller to update a admin
+// @method:PATCH
+// @endPoint:localhost:4000/api/admin/update-admin
 module.exports.updateAdmin=async(req,res,next)=>{
     try{
         if(req.user.role !== process.env.arole)return next(new errorHandling(401,"You donot have enough permission to perform this task."))
@@ -212,6 +217,9 @@ module.exports.login = async (req, res, next) => {
     }
 }
 
+// @desc:Controller to send reset link
+// @method:POST
+// @endPoint:localhost:4000/api/admin/forget-password
 module.exports.forgetPassword=async (req,res,next)=>{
     try{
         const {email}=req.body
@@ -245,6 +253,9 @@ module.exports.forgetPassword=async (req,res,next)=>{
     }
 }
 
+// @desc:Controller to send reset password
+// @method:PATCH
+// @endPoint:localhost:4000/api/admin/reset-password/:code
 module.exports.resetPassword=async(req,res,next)=>{
     try{
         const userCode=req.params.code
