@@ -77,7 +77,25 @@ module.exports.getRating=async(req,res,next)=>{
 
 	}
 }
+module.exports.getRatings=async(req,res,next)=>{
+	try{
 
+		const hotelId=req.body.hotelId
+		if(!hotelId)return next(new errorHandling(400,"Cannot get hotel id."))
+		const query=`SELECT score,reviewMessage FROM ratings WHERE hotel_id=?`
+		const [rating]=await connection.promise().query(query,[hotelId])
+		if(rating.length==0)return next(new errorHandling(400,"Cannot get rating details."))
+		res.status(200).json({
+			status:true,
+			total:rating[0].length
+			message:"Rating fetched sucessfully",
+			data:rating[0]
+		})
+	}catch(error){
+		return next(new errorHandling(error.statusCode ||500,error.message))
+
+	}
+}
 module.exports.deleteRating=async(req,res,next)=>{
 	try{
 
