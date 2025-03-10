@@ -19,6 +19,7 @@ const calculateNights = (checkIn, checkOut) => {
 // @endPoint:localhost:4000/api/user/booking/choose-hotel
 module.exports.chooseHotel = async (req, res, next) => {
     try {
+        if(req.user.role !== "user")return next(new errorHandling(401, "You are not authorized to perform this task."));
         // roomNumber is the total number of room that guest has selected or enterd
         const {
             checkIn,
@@ -42,6 +43,9 @@ module.exports.chooseHotel = async (req, res, next) => {
             user_id:req.user.id,
             url1: req.originalUrl
         };
+        // req.session.save()
+        // console.log(req.session.booking_data)
+        // console.log("Full session object:", req.session);
         res.status(200).json({
             status: true,
             message: "Hotel choosed successfully"
@@ -55,8 +59,12 @@ module.exports.chooseHotel = async (req, res, next) => {
 // @endPoint:localhost:4000/api/user/booking/choose-room
 module.exports.chooseRoom = async (req, res, next) => {
     try {
+        if(req.user.role !== "user")return next(new errorHandling(401, "You are not authorized to perform this task."));
+        // console.log(req.session.booking_data)
+        
         if (!req.session.booking_data) return next(new errorHandling(400, "Please fill out the previous form."));
-        if (req.session.booking_data["url1"] !== "/api/user/choose-hotel") return next(new errorHandling(400, "Please fil out the previous form."));
+
+        if (req.session.booking_data["url1"] !== "/api/user/booking/choose-hotel") return next(new errorHandling(400, "Please fil out the previous form."));
         let {
             room_id
         } = req.body;
@@ -70,7 +78,7 @@ module.exports.chooseRoom = async (req, res, next) => {
         req.session.booking_data["url2"] = req.originalUrl;
         res.status(200).json({
             "status": true,
-            "message": "ok"
+            "message": "Room selected successfully"
         });
     } catch (error) {
         return next(new errorHandling(500, error.message));
@@ -83,11 +91,14 @@ module.exports.chooseRoom = async (req, res, next) => {
 // @endPoint:localhost:4000/api/user/booking/book
 module.exports.book = async (req, res, next) => {
     try {
+        if(req.user.role !== "user")return next(new errorHandling(401, "You are not authorized to perform this task."));
+
         // Validate session data
         if (!req.session.booking_data) {
             return next(new errorHandling(400, "Please fill out all the previous forms."));
         }
-        if (req.session.booking_data["url2"] !== "/api/user/payment-details") {
+        // console.log(req.session.booking_data["url2"])
+        if (req.session.booking_data["url2"] !== "/api/user/booking/choose-room") {
             return next(new errorHandling(400, "Please fill out the previous form."));
         }
         // Extract booking data from session
@@ -98,14 +109,19 @@ module.exports.book = async (req, res, next) => {
             check_out
         } = req.session.booking_data;
         // Fetch room details from the database
-        const roomQuery = `SELECT price FROM rooms WHERE id = ?`;
+        const roomQuery = `SELECT price_per_night FROM rooms WHERE id = ?`;
         const [searchRoom] = await connection.promise().query(roomQuery, [room_id]);
         if (searchRoom.length === 0) {
             return next(new errorHandling(404, "No room found by this ID."));
         }
+        // console.log(searchRoom[0])
+        let roomPrice=searchRoom[0].price_per_night
+        
+        // console.log(roomPrice)
+
         // Calculate total price
         const night = calculateNights(check_in, check_out)
-        const price = (searchRoom[0].price * room_number) * Number(night);
+        const price = (parseFloat(roomPrice) * parseFloat(room_number)) * parseFloat(night);
         try {
             const response = await axios.post(process.env.PaymentUrl, {
                 amount: price
@@ -129,7 +145,7 @@ module.exports.getBookingDataForAdmin=async(req,res,next)=>{
     try{
         if(req.user.role!==process.env.arole)return next (new errorHandling(401,"You donot have enough permission to perform this task."));
         const email=req.body.email 
-        if(!email || Object.keys(req.body).length===0)return next (new errorHandling(400,"Please provide email to get booking data."));
+        if(!email || Object.keys(req.body).l1ength===0)return next (new errorHandling(400,"Please provide email to get booking data."));
         if(!validateEmail(email.trim()))return next (new errorHandling(400,"Please enter valid email address."));
         const queryForFetchingId= `SELECT id FROM users WHERE email=?`
         const [userData]=await connection.promise().query(queryForFetchingId,[email]);

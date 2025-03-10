@@ -23,8 +23,10 @@ module.exports.payWithEsewa = async (req, res, next) => {
         if (!amount) return next(new errorHandling(400, "No amount is given.Please enter a amount"));
         if (amount <= 0) return next(new errorHandling(400, "Amount must be above 0."))
         const total_amount = parseFloat(amount) + parseFloat(tax_amount) + parseFloat(product_service_charge) + parseFloat(product_delivery_charge);
+        // console.log(parseFloat(amount), parseFloat(tax_amount), parseFloat(product_service_charge),  parseFloat(product_delivery_charge))
+        console.log(total_amount)
         const transaction_uuid = Date.now();
-        const message = `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${PRODUCT_CODE}`;
+        const message = `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${process.env.PRODUCT_CODE}`;
         const signature = crypto.createHmac('sha256', process.env.SECRET_KEY).update(message).digest('base64');
         const paymentData = {
             amount: parseFloat(amount),
@@ -41,12 +43,13 @@ module.exports.payWithEsewa = async (req, res, next) => {
         };
         // console.log( paymentData);  
         // Send request to eSewa API
+
         const pay = await axios.post(process.env.BASE_URL, new URLSearchParams(paymentData).toString(), {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             }
         });
-        // console.log(pay.request.res.responseUrl)
+        console.log(pay.request.res.responseUrl)
         res.redirect(pay.request.res.responseUrl);
     } catch (error) {
         console.log(error);
