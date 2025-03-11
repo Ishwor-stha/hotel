@@ -254,7 +254,7 @@ module.exports.forgetPassword=async (req,res,next)=>{
 }
 
 // @desc:Controller to send reset password
-// @method:PATCH
+// @method:PATCH 
 // @endPoint:localhost:4000/api/admin/reset-password/:code
 module.exports.resetPassword=async(req,res,next)=>{
     try{

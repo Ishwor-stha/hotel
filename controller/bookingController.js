@@ -20,30 +20,35 @@ const calculateNights = (checkIn, checkOut) => {
 module.exports.chooseHotel = async (req, res, next) => {
     try {
         if(req.user.role !== "user")return next(new errorHandling(401, "You are not authorized to perform this task."));
+       if(!req.body|| Object.keys(req.body).length===0)return next(new errorHandling(400, "Empty request body."));
         // roomNumber is the total number of room that guest has selected or enterd
-        const {
-            checkIn,
-            checkOut,
-            roomNumber,
-            guestNumber,
-            hotelId
-        } = req.body;
-        if (!checkIn || !checkOut || !roomNumber || !guestNumber || !hotelId) return next(new errorHandling(400, "All fields are required."));
-        const query = `SELECT * FROM hotels WHERE id=? ` //previous name=?
-        const [check] = await connection.promise().query(query, [hotelId]); //previous [hotelName]
+        const possibleFields=["checkIn","checkOut","roomNumber","guestNumber","hotelId"]
+        const checkFields=possibleFields.filter(field => !Object.keys(req.body).includes(field) || !req.body[field] || !String(req.body[field]).trim())
+        if(checkFields.length!==0)return next(new errorHandling(400,`${checkFields} ${checkFields.length ===1?"is":"are"} missing.Please fill all the fields`));
+       
+        const query = `SELECT * FROM hotels WHERE id=? ` 
+        const hotelId=req.body["hotelId"]
+        if(isNaN(Number(hotelId)))return next(new errorHandling(400, "Invalid Hotel id."));
+        const [check] = await connection.promise().query(query, [hotelId]); 
+
         if (check.length === 0) {
             return next(new errorHandling(404, "Cannot find the hotel with this name."));
         }
-        req.session.booking_data = {
-            hotel_id: hotelId,
-            check_in: checkIn,
-            check_out: checkOut,
-            room_number: roomNumber,
-            guest_number: guestNumber,
-            user_id:req.user.id,
-            url1: req.originalUrl
-        };
-        // req.session.save()
+
+        //modified verion of above code to store the data in session
+        req.session.booking_data={}
+        const sessionField=["check_in","check_out","room_number","guest_number","hotel_id"]
+        for(field in sessionField){
+            // field returns the number ie(0,1,2 .....)
+            const sessionFieldName=sessionField[field]
+            const bodyFieldName=possibleFields[field]
+            req.session.booking_data[sessionFieldName]=req.body[bodyFieldName]
+
+        }
+        req.session.booking_data["user_id"]=req.user.id
+        req.session.booking_data["url1"]=req.originalUrl
+
+       
         // console.log(req.session.booking_data)
         // console.log("Full session object:", req.session);
         res.status(200).json({
