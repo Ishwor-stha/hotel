@@ -17,6 +17,22 @@ const crypto=require("crypto")
 const {sendMessage}=require("../utils/nodemailer");
 const {updateValidation}=require("../utils/updateValidation")
 
+const fullNameForUpdate=async(id,firstName,middleName,lastName)=>{
+        const [dbName] = await connection.promise().query(`SELECT name FROM admin WHERE id = ?`, [id]);
+
+        // Use an empty string if no name is found
+        let nameArray = dbName.length > 0 && dbName[0].name ? dbName[0].name.split(" ") : ["", "", ""];
+
+        // Ensure nameArray has at least 3 elements (First, Middle, Last)
+        while (nameArray.length < 3) {
+            nameArray.push("");
+        }
+
+        // Construct the new name
+        return `${firstName || nameArray[0]} ${middleName || nameArray[1]} ${lastName || nameArray[2]}`.trim();
+}
+
+
 // @desc:Controller to check the the token is valid or not
 module.exports.checkJwt = (req, res, next) => {
         
@@ -182,7 +198,7 @@ module.exports.updateAdmin=async(req,res,next)=>{
         if(!id)return next(new errorHandling(409,"Please login first"))
 
         if(!req.body ||Object.keys(req.body).length===0)return next(new errorHandling(400,"The body field is empty."));
-        const possibleFields = ["firstName", "lastName", "email", "phone","phone2", "password", "confirmPassword","dob","gender","address","country","city","zip"];
+        const possibleFields = ["firstName","middleName", "lastName", "email", "phone","phone2", "password", "confirmPassword","dob","gender","address","country","city","zip"];
         const checkValue=Object.keys(req.body).filter(field=> !req.body[field])
         if(checkValue.length!==0) return next(new errorHandling(400,`Empty ${checkValue} body`))
 
@@ -195,10 +211,40 @@ module.exports.updateAdmin=async(req,res,next)=>{
             const hashedPassword=bcrypt.hashSync(req.body["password"],10)
             req.body["password"]=hashedPassword        
         }
+        let name = "";
+        if(req.body["firstName"] || req.body["middleName"] || req.body["lastName"]){
 
-        const dbField=valueFields.map(field=> `${field}=?`)
-        const values=validField.map(field=> req.body[field])
-        const query=`UPDATE hotels SET ${dbField.join(",")} WHERE id =${id}` 
+            name=await fullNameForUpdate(id,req.body["firstName"],req.body["middleName"],req.body["lastName"])
+        }
+        const values=[]
+        const dbField=[]
+        validField.forEach(field=>{
+            if (["firstName","lastName","middleName"].includes(field)) {
+                if (!dbField.includes("name=?")) {
+                    dbField.push("name=?");
+                    values.push(name);
+                }
+                return;
+            }
+
+            if (field === "password" || field === "confirmPassword") {
+                if (!dbField.includes("password=?")) {
+                    dbField.push("password=?");
+                    values.push(hashedPassword);
+                }
+                return;
+            }
+
+            dbField.push(`${field}=?`);
+            values.push(req.body[field]);
+        })
+        // const dbField=validField.map(field=>{
+        //     values.push(req.body[field])
+        //     return `${field}=?`
+
+        // })
+        values.push(id)
+        const query=`UPDATE admin SET ${dbField.join(",")} WHERE id =?` 
         const update=await connection.promise().query(query,values)
         if(update[0]["affectedRows"]===0)return next(new errorHandling(500,"Cannot update the deatils.Please try again later."))
         res.status(200).json({
