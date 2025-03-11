@@ -102,38 +102,75 @@ module.exports.getOneAdmin=async(req,res,next)=>{
 // @endPoint:localhost:4000/api/admin/create-admin
 module.exports.createAdmin = async (req, res, next) => {
     try {
-        if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You donot have permission to perform this action."))
-        if (!req.body) return next(new errorHandling(400, "Fields are empty.Please fill out the fields."));
-        const possibleFields = ["firstName", "lastName", "email", "phone","phone2", "password", "confirmPassword","dob","gender","address","country","city","zip"];
-        const reqBodyField = Object.keys(req.body);
-        const checkFields = possibleFields.filter((field) => !reqBodyField.includes(field) || !req.body[field]);
-        if (checkFields.length!==0) return next(new errorHandling(400, `${checkFields} fields are missing please fill out these fields.`));
-
-        const validationMessage=doValidations(req.body.email, req.body.phone,req.body.phone2,req.body.password,req.body.confirmPassword);
-
-        if(validationMessage)return next(new errorHandling(400,validationMessage));
+        if (req.user.role !== process.env.arole) 
+            return next(new errorHandling(401, "You do not have permission to perform this action."));
         
-        const fullName = createFullName(req.body.firstName,req.body.middleName,req.body.lastName);
+        if (!req.body || Object.keys(req.body).length === 0) 
+            return next(new errorHandling(400, "Fields are empty. Please fill out the fields."));
+
+        const possibleFields = ["firstName","lastName", "email", "phone", "phone2", "password", "confirmPassword", "dob", "gender", "address", "country", "city", "zip"];
+        const missingFields = possibleFields.filter(field => !req.body.hasOwnProperty(field) || !String(req.body[field]).trim());
+
+        if (missingFields.length !== 0) 
+            return next(new errorHandling(400, `${missingFields} fields ${missingFields.length===1?"is":"are"} missing. Please fill out these fields.`));
+
+        const validationMessage = doValidations(req.body.email, req.body.phone, req.body.phone2, req.body.password, req.body.confirmPassword);
+        if (validationMessage) return next(new errorHandling(400, validationMessage));
+
+        const fullName = createFullName(req.body.firstName, req.body.middleName, req.body.lastName);
+        const queryFieldName = [];
+        const values = [];
+        const questionMarks = [];
 
         const hashedPassword = bcrypt.hashSync(req.body.password, 10);
-        // const query=`INSERT INTO admin (name, email, password, phone) VALUES (${name},${email},${password},${phone})`//vulnerable to sql injection
-        const query = `
-            INSERT INTO admin (name, email, password, phone, phone2, dob, gender, address, country, city, zip) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-        const values=[fullName, req.body.email, hashedPassword, req.body.phone, req.body.phone2, req.body.dob, req.body.gender, req.body.address, req.body.country, req.body.city, req.body.zip];
+        possibleFields.forEach(field => {
+            if (["firstName","lastName"].includes(field)) {
+                if (!queryFieldName.includes("name")) {
+                    queryFieldName.push("name");
+                    questionMarks.push("?");
+                    values.push(fullName);
+                }
+                return;
+            }
 
-        await connection.promise().query(query,values); //substuting the ???? from the actual data
-        res.status(200).json({
-            "status": true,
-            "message": `${fullName} created sucessfully.`
+            if (field === "password" || field === "confirmPassword") {
+                if (!queryFieldName.includes("password")) {
+                    queryFieldName.push("password");
+                    questionMarks.push("?");
+                    values.push(hashedPassword);
+                }
+                return;
+            }
+
+            queryFieldName.push(field);
+            questionMarks.push("?");
+            values.push(req.body[field]);
         });
+
+        // console.log(queryFieldName)
+        // console.log(values)
+        // console.log(questionMarks)
+
+
+        const query = `INSERT INTO admin (${queryFieldName.join(",")}) VALUES (${questionMarks.join(",")})`;
+
+        const createAdmin=await connection.promise().query(query, values)
+        if(createAdmin[0]["affectedRows"]===0)return next(new errorHandling(500,"Cannot create the admin.Please try again later."))
+
+
+        res.status(200).json({
+            status: true,
+            message: `${fullName} created successfully.`
+        });
+
     } catch (error) {
-        if (error.code === "ER_DUP_ENTRY") return next(new errorHandling(500, `An account with this email address is already exists.Please try another email address.`));
+        if (error.code === "ER_DUP_ENTRY") {
+            return next(new errorHandling(500, `An account with this email address already exists. Please try another email address.`));
+        }
         return next(new errorHandling(500, error.message));
     }
 }
-
 // @desc:Controller to update a admin
 // @method:PATCH
 // @endPoint:localhost:4000/api/admin/update-admin
