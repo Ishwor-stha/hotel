@@ -217,6 +217,7 @@ module.exports.updateAdmin = async (req, res, next) => {
 
             name = await fullNameForUpdate(id, req.body["firstName"], req.body["middleName"], req.body["lastName"])
         }
+        // console.log(name)
         const values = []
         const dbField = []
         validField.forEach(field => {
