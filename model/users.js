@@ -19,7 +19,7 @@ try {
             
             role ENUM('user') DEFAULT 'user', 
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP 
+            updated_at TIMESTAMP NULL 
         );
         `;
         connection.query(query, (error, result) => {

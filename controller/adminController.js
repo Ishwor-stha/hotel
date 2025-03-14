@@ -1,13 +1,14 @@
 const {
     connection,
 } = require("../db");
+const mysql=require("mysql2")
 const {
     validateEmail
 } = require("../utils/emailValidator");
 const errorHandling = require("../utils/errorHandling");
-const {
-    isValidNepaliPhoneNumber
-} = require("../utils/phNoValidation");
+// const {
+//     isValidNepaliPhoneNumber
+// } = require("../utils/phNoValidation");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { createFullName } = require("../utils/createFullName");
@@ -243,6 +244,8 @@ module.exports.updateAdmin = async (req, res, next) => {
         //     return `${field}=?`
 
         // })
+        dbField.push("updated_at=?")
+        values.push(mysql.raw("CURRENT_TIMESTAMP"))
         values.push(id)
         const query = `UPDATE admin SET ${dbField.join(",")} WHERE id =?`
         const update = await connection.promise().query(query, values)
@@ -354,7 +357,7 @@ module.exports.resetPassword = async (req, res, next) => {
         const hashedPassword = bcrypt.hashSync(password, 10);
 
 
-        await connection.promise().query(`UPDATE admin SET password = ?,code=? WHERE email = ?`, [hashedPassword, null, email])
+        await connection.promise().query(`UPDATE admin SET password = ?,code=?,updated_at=? WHERE email = ?`, [hashedPassword, null,mysql.raw("CURRENT_TIMESTAMP"), email])
         res.status(200).json({
 
             status: true,

@@ -1,4 +1,5 @@
 const errorHandling = require("../utils/errorHandling");
+const mysql=require("mysql2")
 const {
     connection
 } = require("../db");
@@ -300,6 +301,8 @@ module.exports.updateUser = async (req, res, next) => {
         });
         // Secure parameterized query
         const query = `UPDATE users SET ${fieldWithQuestionMark.join(", ")} WHERE id = ?`;
+        fieldWithQuestionMark.push("updated_at=?")
+        values.push(mysql.raw("CURRENT_TIMESTAMP"))
         values.push(userId); // Ensure userId is added safely
         const [updateUser] = await connection.promise().query(query, values);
         if (updateUser.affectedRows === 0) return next(new errorHandling(500, "Cannot update the details. Please try again later."));
@@ -356,7 +359,7 @@ module.exports.resetPassword = async (req, res, next) => {
         if (!query[0].code) return next(new errorHandling(400, "Something went wrong.Please try to resend code again"));
         if (query[0].code !== userCode) return next(new errorHandling(400, "Please enter correct code."));
         const hashedPassword = bcrypt.hashSync(password, 10);
-        await connection.promise().query(`UPDATE admin SET password = ?,code=? WHERE email = ?`, [hashedPassword, null, email])
+        await connection.promise().query(`UPDATE admin SET password = ?,code=?,updated_at=? WHERE email = ?`, [hashedPassword, null,mysql.raw("CURRENT_TIMESTAMP"), email])
         res.status(200).json({
             status: true,
             message: "Password updated sucessfully"

@@ -57,7 +57,7 @@ app.all("*", (req, res) => {
 
 app.use(errorController)
 
-const port=process.env.PORT ||4000
+const port=process.env.SERVER_PORT ||4000
 app.listen(port,()=>{
     console.log(kleur.blue().italic(`Server is listening on port ${port}.`))
     console.log(kleur.blue().italic(`URL=http://localhost:${port}/`))
