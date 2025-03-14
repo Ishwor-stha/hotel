@@ -1,5 +1,6 @@
 const { connection, connect } = require("../db");
 const errorHandling = require("../utils/errorHandling");
+const mysql=require("mysql2")
 
 
 module.exports.createHotel = async (req, res, next) => {
@@ -37,24 +38,28 @@ module.exports.updateHotel = async (req, res, next) => {
 	try {
 		if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You donot have enough permission to perform this task."));
 
-		const id = req.params.id.trim()
+		const id = req.params.id
 		if (!id) return next(new errorHandling(400, "No id is given for hotel"));
 		if (isNaN(Number(id))) return next(new errorHandling(400, "Hotel id must be a number."));
+		if(!req.body || Object.keys(req.body).length===0)return next(new errorHandling(400,"Empty body is given."))
 		const possibleFields = ["name", "description", "image", "location"]
 		let valueFields = []
 		const bodyField = Object.keys(req.body).map((field) => {
 			if (possibleFields.includes(field)) {
-				valueFields.push(field)
+				valueFields.push(req.body[field])
 				return `${field}=?`
 			}
 		})
-		const value = valueFields.map(field => req.body[field])
+		
 
-		const fieldName = bodyField.join(",")
 		// console.log(fieldName);
 		// console.log(value)
-		const query = `UPDATE hotels SET ${fieldName} WHERE id =${id}`
-		const update = await connection.promise().query(query, value);
+		bodyField.push("updated_at=?")
+		valueFields.push(mysql.raw("CURRENT_TIMESTAMP"))
+		valueFields.push(id)
+		const fieldName = bodyField.join(",")
+		const query = `UPDATE hotels SET ${fieldName} WHERE id =?`
+		const update = await connection.promise().query(query, valueFields);
 		if (update[0]["affectedRows"] === 0) return next(new errorHandling(500, "Cannot update the details please check the id or details."))
 		// console.log(update);
 		res.status(200).json({
