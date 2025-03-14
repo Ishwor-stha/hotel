@@ -11,31 +11,31 @@ const {
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { createFullName } = require("../utils/createFullName");
-const {doValidations}=require("../utils/allValidation");
-const{forgetPasswordMessage}=require("../utils/forgetTemplate")
-const crypto=require("crypto")
-const {sendMessage}=require("../utils/nodemailer");
-const {updateValidation}=require("../utils/updateValidation")
+const { doValidations } = require("../utils/allValidation");
+const { forgetPasswordMessage } = require("../utils/forgetTemplate")
+const crypto = require("crypto")
+const { sendMessage } = require("../utils/nodemailer");
+const { updateValidation } = require("../utils/updateValidation")
 
-const fullNameForUpdate=async(id,firstName,middleName,lastName)=>{
-        const [dbName] = await connection.promise().query(`SELECT name FROM admin WHERE id = ?`, [id]);
+const fullNameForUpdate = async (id, firstName, middleName, lastName) => {
+    const [dbName] = await connection.promise().query(`SELECT name FROM admin WHERE id = ?`, [id]);
 
-        // Use an empty string if no name is found
-        let nameArray = dbName.length > 0 && dbName[0].name ? dbName[0].name.split(" ") : ["", "", ""];
+    // Use an empty string if no name is found
+    let nameArray = dbName.length > 0 && dbName[0].name ? dbName[0].name.split(" ") : ["", "", ""];
 
-        // Ensure nameArray has at least 3 elements (First, Middle, Last)
-        while (nameArray.length < 3) {
-            nameArray.push("");
-        }
+    // Ensure nameArray has at least 3 elements (First, Middle, Last)
+    while (nameArray.length < 3) {
+        nameArray.push("");
+    }
 
-        // Construct the new name
-        return `${firstName || nameArray[0]} ${middleName || nameArray[1]} ${lastName || nameArray[2]}`.trim();
+    // Construct the new name
+    return `${firstName || nameArray[0]} ${middleName || nameArray[1]} ${lastName || nameArray[2]}`.trim();
 }
 
 
 // @desc:Controller to check the the token is valid or not
 module.exports.checkJwt = (req, res, next) => {
-        
+
     try {
         const token = req.cookies.auth_token;
         // no token
@@ -46,9 +46,9 @@ module.exports.checkJwt = (req, res, next) => {
         jwt.verify(token, process.env.jwt_secret_key, (err, decode) => {
             if (err) {
                 res.clearCookie('auth_token', {
-                httpOnly: true,
-                sameSite: "Strict"
-                 });
+                    httpOnly: true,
+                    sameSite: "Strict"
+                });
                 return next(new errorHandling(403, "Your session has been expired.Please login again. "));
             }
             req.user = decode;
@@ -62,7 +62,7 @@ module.exports.checkJwt = (req, res, next) => {
 // @method:GET
 // @endPoint:localhost:4000/api/admin/get
 module.exports.getAll = async (req, res, next) => {
-    
+
     // console.log(process.env.arole);
     try {
         if (req.user.role !== process.env.arole) return next(new errorHandling(400, "You donot have permission to perform this action."))
@@ -80,35 +80,35 @@ module.exports.getAll = async (req, res, next) => {
             "admin list": data
         })
     } catch (error) {
-        return next(new errorHandling(error.statusCode||500,error.message))
+        return next(new errorHandling(error.statusCode || 500, error.message))
     }
 }
 // @desc:Controller to get only one admin 
 // @method:GET
 // @endPoint:localhost:4000/api/admin/get-one-admin/:id
-module.exports.getOneAdmin=async(req,res,next)=>{
-    try{
+module.exports.getOneAdmin = async (req, res, next) => {
+    try {
         if (req.user.role !== process.env.arole) return next(new errorHandling(400, "You donot have permission to perform this action."))
-        const id=req.params.id;
-        if(!id)return next(new errorHandling(400,"No admin id is given as parameters"));
-        if(isNaN(Number(id))) return next(new errorHandling(400,"Only number are accepted."));
+        const id = req.params.id;
+        if (!id) return next(new errorHandling(400, "No admin id is given as parameters"));
+        if (isNaN(Number(id))) return next(new errorHandling(400, "Only number are accepted."));
 
         const query = `SELECT id, name, email, phone, phone2, dob, gender, address, country, city, zip FROM admin WHERE id=? LIMIT 1`;
 
-        let [data]=await connection.promise().query(query,[id]);
-        if(data.length==0)return next(new errorHandling(404,"No data found by given admin id."));
-        
+        let [data] = await connection.promise().query(query, [id]);
+        if (data.length == 0) return next(new errorHandling(404, "No data found by given admin id."));
+
         res.status(200).json({
 
-            status:true,
-            details:data[0]
-        });    
+            status: true,
+            details: data[0]
+        });
 
 
-    }catch(error){
-        
+    } catch (error) {
+
         console.log(error)
-        return next(new errorHandling(500,error.message));
+        return next(new errorHandling(500, error.message));
 
     }
 }
@@ -118,17 +118,17 @@ module.exports.getOneAdmin=async(req,res,next)=>{
 // @endPoint:localhost:4000/api/admin/create-admin
 module.exports.createAdmin = async (req, res, next) => {
     try {
-        if (req.user.role !== process.env.arole) 
+        if (req.user.role !== process.env.arole)
             return next(new errorHandling(401, "You do not have permission to perform this action."));
-        
-        if (!req.body || Object.keys(req.body).length === 0) 
+
+        if (!req.body || Object.keys(req.body).length === 0)
             return next(new errorHandling(400, "Fields are empty. Please fill out the fields."));
 
-        const possibleFields = ["firstName","lastName", "email", "phone", "phone2", "password", "confirmPassword", "dob", "gender", "address", "country", "city", "zip"];
+        const possibleFields = ["firstName", "lastName", "email", "phone", "phone2", "password", "confirmPassword", "dob", "gender", "address", "country", "city", "zip"];
         const missingFields = possibleFields.filter(field => !req.body.hasOwnProperty(field) || !String(req.body[field]).trim());
 
-        if (missingFields.length !== 0) 
-            return next(new errorHandling(400, `${missingFields} fields ${missingFields.length===1?"is":"are"} missing. Please fill out these fields.`));
+        if (missingFields.length !== 0)
+            return next(new errorHandling(400, `${missingFields} fields ${missingFields.length === 1 ? "is" : "are"} missing. Please fill out these fields.`));
 
         const validationMessage = doValidations(req.body.email, req.body.phone, req.body.phone2, req.body.password, req.body.confirmPassword);
         if (validationMessage) return next(new errorHandling(400, validationMessage));
@@ -141,7 +141,7 @@ module.exports.createAdmin = async (req, res, next) => {
         const hashedPassword = bcrypt.hashSync(req.body.password, 10);
 
         possibleFields.forEach(field => {
-            if (["firstName","lastName"].includes(field)) {
+            if (["firstName", "lastName"].includes(field)) {
                 if (!queryFieldName.includes("name")) {
                     queryFieldName.push("name");
                     questionMarks.push("?");
@@ -171,8 +171,8 @@ module.exports.createAdmin = async (req, res, next) => {
 
         const query = `INSERT INTO admin (${queryFieldName.join(",")}) VALUES (${questionMarks.join(",")})`;
 
-        const createAdmin=await connection.promise().query(query, values)
-        if(createAdmin[0]["affectedRows"]===0)return next(new errorHandling(500,"Cannot create the admin.Please try again later."))
+        const createAdmin = await connection.promise().query(query, values)
+        if (createAdmin[0]["affectedRows"] === 0) return next(new errorHandling(500, "Cannot create the admin.Please try again later."))
 
 
         res.status(200).json({
@@ -190,36 +190,36 @@ module.exports.createAdmin = async (req, res, next) => {
 // @desc:Controller to update a admin
 // @method:PATCH
 // @endPoint:localhost:4000/api/admin/update-admin
-module.exports.updateAdmin=async(req,res,next)=>{
-    try{
-        if(req.user.role !== process.env.arole)return next(new errorHandling(401,"You donot have enough permission to perform this task."))
+module.exports.updateAdmin = async (req, res, next) => {
+    try {
+        if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You donot have enough permission to perform this task."))
         // from jwtVerify controller
-        const id=req.user.id
-        if(!id)return next(new errorHandling(409,"Please login first"))
+        const id = req.user.id
+        if (!id) return next(new errorHandling(409, "Please login first"))
 
-        if(!req.body ||Object.keys(req.body).length===0)return next(new errorHandling(400,"The body field is empty."));
-        const possibleFields = ["firstName","middleName", "lastName", "email", "phone","phone2", "password", "confirmPassword","dob","gender","address","country","city","zip"];
-        const checkValue=Object.keys(req.body).filter(field=> !req.body[field])
-        if(checkValue.length!==0) return next(new errorHandling(400,`Empty ${checkValue} body`))
+        if (!req.body || Object.keys(req.body).length === 0) return next(new errorHandling(400, "The body field is empty."));
+        const possibleFields = ["firstName", "middleName", "lastName", "email", "phone", "phone2", "password", "confirmPassword", "dob", "gender", "address", "country", "city", "zip"];
+        const checkValue = Object.keys(req.body).filter(field => !req.body[field])
+        if (checkValue.length !== 0) return next(new errorHandling(400, `Empty ${checkValue} body`))
 
         // check if the req.body object has the keys which matches the the option in possible field and also checks the keys is empty or not 
-        const validField=Object.keys(req.body).filter(field=> possibleFields.includes(field))
-        
-       const validationMessage=updateValidation(req.body["email"],req.body["phone"],req.body["phone2"],req.body["password"],req.body["confirmPassword"])
-       if(validationMessage)return next(new errorHandling(400,validationMessage));
-        if(req.body["password"]){
-            const hashedPassword=bcrypt.hashSync(req.body["password"],10)
-            req.body["password"]=hashedPassword        
+        const validField = Object.keys(req.body).filter(field => possibleFields.includes(field))
+
+        const validationMessage = updateValidation(req.body["email"], req.body["phone"], req.body["phone2"], req.body["password"], req.body["confirmPassword"])
+        if (validationMessage) return next(new errorHandling(400, validationMessage));
+        if (req.body["password"]) {
+            const hashedPassword = bcrypt.hashSync(req.body["password"], 10)
+            req.body["password"] = hashedPassword
         }
         let name = "";
-        if(req.body["firstName"] || req.body["middleName"] || req.body["lastName"]){
+        if (req.body["firstName"] || req.body["middleName"] || req.body["lastName"]) {
 
-            name=await fullNameForUpdate(id,req.body["firstName"],req.body["middleName"],req.body["lastName"])
+            name = await fullNameForUpdate(id, req.body["firstName"], req.body["middleName"], req.body["lastName"])
         }
-        const values=[]
-        const dbField=[]
-        validField.forEach(field=>{
-            if (["firstName","lastName","middleName"].includes(field)) {
+        const values = []
+        const dbField = []
+        validField.forEach(field => {
+            if (["firstName", "lastName", "middleName"].includes(field)) {
                 if (!dbField.includes("name=?")) {
                     dbField.push("name=?");
                     values.push(name);
@@ -244,15 +244,15 @@ module.exports.updateAdmin=async(req,res,next)=>{
 
         // })
         values.push(id)
-        const query=`UPDATE admin SET ${dbField.join(",")} WHERE id =?` 
-        const update=await connection.promise().query(query,values)
-        if(update[0]["affectedRows"]===0)return next(new errorHandling(500,"Cannot update the deatils.Please try again later."))
+        const query = `UPDATE admin SET ${dbField.join(",")} WHERE id =?`
+        const update = await connection.promise().query(query, values)
+        if (update[0]["affectedRows"] === 0) return next(new errorHandling(500, "Cannot update the deatils.Please try again later."))
         res.status(200).json({
-            status:true,
-            message:"Detail updated sucessfully."
+            status: true,
+            message: "Detail updated sucessfully."
         })
-    }catch(error){
-        return next(new errorHandling(error.statusCode||500,error.message))
+    } catch (error) {
+        return next(new errorHandling(error.statusCode || 500, error.message))
     }
 }
 
@@ -303,65 +303,65 @@ module.exports.login = async (req, res, next) => {
 // @desc:Controller to send reset link
 // @method:POST
 // @endPoint:localhost:4000/api/admin/forget-password
-module.exports.forgetPassword=async (req,res,next)=>{
-    try{
-        const {email}=req.body
-        if(!email)return next(new errorHandling(400,"Please enter email."));
-        if(!validateEmail(email))return next(new errorHandling(400,"Please enter valid email address."));
-        const queryForFetching=`SELECT name FROM admin WHERE email=?`
-        const [data]=await connection.promise().query(queryForFetching,[email]);
-        if(data.length===0)return next(new errorHandling(404,"No user found from this email address.Please reenter a email."));
-        const token=crypto.randomBytes(8).toString('hex')
-        const link=`${process.env.domain}api/admin/reset-password/${token}`
-        const name=data[0].name;
-        const message=forgetPasswordMessage(link,name);
-        const subject="Reset link";
+module.exports.forgetPassword = async (req, res, next) => {
+    try {
+        const { email } = req.body
+        if (!email) return next(new errorHandling(400, "Please enter email."));
+        if (!validateEmail(email)) return next(new errorHandling(400, "Please enter valid email address."));
+        const queryForFetching = `SELECT name FROM admin WHERE email=?`
+        const [data] = await connection.promise().query(queryForFetching, [email]);
+        if (data.length === 0) return next(new errorHandling(404, "No user found from this email address.Please reenter a email."));
+        const token = crypto.randomBytes(8).toString('hex')
+        const link = `${process.env.domain}api/admin/reset-password/${token}`
+        const name = data[0].name;
+        const message = forgetPasswordMessage(link, name);
+        const subject = "Reset link";
 
-        await sendMessage(res,email,subject,message);
-        const query=`UPDATE admin SET code = ? WHERE email = ?`;
-        await connection.promise().query(query,[token,email]);
+        await sendMessage(res, email, subject, message);
+        const query = `UPDATE admin SET code = ? WHERE email = ?`;
+        await connection.promise().query(query, [token, email]);
 
         res.status(200).json({
-            status:true,
-            message:"Reset link is sent to your email"
+            status: true,
+            message: "Reset link is sent to your email"
         })
 
 
 
-    }catch(error){
-        const quer=`UPDATE admin SET code = ? WHERE email = ?`;
-        await connection.promise().query(quer,[null,email])
+    } catch (error) {
+        const quer = `UPDATE admin SET code = ? WHERE email = ?`;
+        await connection.promise().query(quer, [null, email])
 
-        return next(new errorHandling(error.statusCode ||500,error.message));
+        return next(new errorHandling(error.statusCode || 500, error.message));
     }
 }
 
 // @desc:Controller to send reset password
 // @method:PATCH 
 // @endPoint:localhost:4000/api/admin/reset-password/:code
-module.exports.resetPassword=async(req,res,next)=>{
-    try{
-        const userCode=req.params.code
-        const {email,password,confirmPassword}=req.body
-        if(!userCode)return next(new errorHandling(400,"Oops something went wrong"));
-        if(!email || !password || !confirmPassword)return next(new errorHandling(400,"Email,password or confirmPassword is missng please fill out the form again."));
-        if(!validateEmail(email))return next(new errorHandling(400,"Please enter valid email address"));
-        if(password !==confirmPassword)return next(new errorHandling(400,"Confirm password and password must be same."));
-        const [query]=await connection.promise().query(`SELECT email,code FROM admin WHERE email=?`,[email]);
-        if(!query || query[0].length ===0)return next(new errorHandling(400,"The code or email is not found.Please try again."));
-        if(!query[0].code) return next(new errorHandling(400,"Something went wrong.Please try to resend code again"));
-        if(query[0].code !==userCode)return next(new errorHandling(400,"Please enter correct code."));
-        const hashedPassword=bcrypt.hashSync(password,10);
+module.exports.resetPassword = async (req, res, next) => {
+    try {
+        const userCode = req.params.code
+        const { email, password, confirmPassword } = req.body
+        if (!userCode) return next(new errorHandling(400, "Oops something went wrong"));
+        if (!email || !password || !confirmPassword) return next(new errorHandling(400, "Email,password or confirmPassword is missng please fill out the form again."));
+        if (!validateEmail(email)) return next(new errorHandling(400, "Please enter valid email address"));
+        if (password !== confirmPassword) return next(new errorHandling(400, "Confirm password and password must be same."));
+        const [query] = await connection.promise().query(`SELECT email,code FROM admin WHERE email=?`, [email]);
+        if (!query || query[0].length === 0) return next(new errorHandling(400, "The code or email is not found.Please try again."));
+        if (!query[0].code) return next(new errorHandling(400, "Something went wrong.Please try to resend code again"));
+        if (query[0].code !== userCode) return next(new errorHandling(400, "Please enter correct code."));
+        const hashedPassword = bcrypt.hashSync(password, 10);
 
 
-        await connection.promise().query(`UPDATE admin SET password = ?,code=? WHERE email = ?`,[hashedPassword,null,email])
+        await connection.promise().query(`UPDATE admin SET password = ?,code=? WHERE email = ?`, [hashedPassword, null, email])
         res.status(200).json({
-        
-            status:true,
-            message:"Password updated sucessfully"
+
+            status: true,
+            message: "Password updated sucessfully"
         })
-        
-    }catch(error){
-        next(new errorHandling(error.statusCode||500,error.message));
+
+    } catch (error) {
+        next(new errorHandling(error.statusCode || 500, error.message));
     }
 }

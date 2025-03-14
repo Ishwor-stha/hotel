@@ -19,36 +19,36 @@ const calculateNights = (checkIn, checkOut) => {
 // @endPoint:localhost:4000/api/user/booking/choose-hotel
 module.exports.chooseHotel = async (req, res, next) => {
     try {
-        if(req.user.role !== "user")return next(new errorHandling(401, "You are not authorized to perform this task."));
-       if(!req.body|| Object.keys(req.body).length===0)return next(new errorHandling(400, "Empty request body."));
+        if (req.user.role !== "user") return next(new errorHandling(401, "You are not authorized to perform this task."));
+        if (!req.body || Object.keys(req.body).length === 0) return next(new errorHandling(400, "Empty request body."));
         // roomNumber is the total number of room that guest has selected or enterd
-        const possibleFields=["checkIn","checkOut","roomNumber","guestNumber","hotelId"]
-        const checkFields=possibleFields.filter(field => !Object.keys(req.body).includes(field) || !req.body[field] || !String(req.body[field]).trim())
-        if(checkFields.length!==0)return next(new errorHandling(400,`${checkFields} ${checkFields.length ===1?"is":"are"} missing.Please fill all the fields`));
-       
-        const query = `SELECT * FROM hotels WHERE id=? ` 
-        const hotelId=req.body["hotelId"]
-        if(isNaN(Number(hotelId)))return next(new errorHandling(400, "Invalid Hotel id."));
-        const [check] = await connection.promise().query(query, [hotelId]); 
+        const possibleFields = ["checkIn", "checkOut", "roomNumber", "guestNumber", "hotelId"]
+        const checkFields = possibleFields.filter(field => !Object.keys(req.body).includes(field) || !req.body[field] || !String(req.body[field]).trim())
+        if (checkFields.length !== 0) return next(new errorHandling(400, `${checkFields} ${checkFields.length === 1 ? "is" : "are"} missing.Please fill all the fields`));
+
+        const query = `SELECT * FROM hotels WHERE id=? `
+        const hotelId = req.body["hotelId"]
+        if (isNaN(Number(hotelId))) return next(new errorHandling(400, "Invalid Hotel id."));
+        const [check] = await connection.promise().query(query, [hotelId]);
 
         if (check.length === 0) {
             return next(new errorHandling(404, "Cannot find the hotel with this name."));
         }
 
         //modified verion of above code to store the data in session
-        req.session.booking_data={}
-        const sessionField=["check_in","check_out","room_number","guest_number","hotel_id"]
-        for(field in sessionField){
+        req.session.booking_data = {}
+        const sessionField = ["check_in", "check_out", "room_number", "guest_number", "hotel_id"]
+        for (field in sessionField) {
             // field returns the number ie(0,1,2 .....)
-            const sessionFieldName=sessionField[field]
-            const bodyFieldName=possibleFields[field]
-            req.session.booking_data[sessionFieldName]=req.body[bodyFieldName]
+            const sessionFieldName = sessionField[field]
+            const bodyFieldName = possibleFields[field]
+            req.session.booking_data[sessionFieldName] = req.body[bodyFieldName]
 
         }
-        req.session.booking_data["user_id"]=req.user.id
-        req.session.booking_data["url1"]=req.originalUrl
+        req.session.booking_data["user_id"] = req.user.id
+        req.session.booking_data["url1"] = req.originalUrl
 
-       
+
         // console.log(req.session.booking_data)
         // console.log("Full session object:", req.session);
         res.status(200).json({
@@ -64,9 +64,9 @@ module.exports.chooseHotel = async (req, res, next) => {
 // @endPoint:localhost:4000/api/user/booking/choose-room
 module.exports.chooseRoom = async (req, res, next) => {
     try {
-        if(req.user.role !== "user")return next(new errorHandling(401, "You are not authorized to perform this task."));
+        if (req.user.role !== "user") return next(new errorHandling(401, "You are not authorized to perform this task."));
         // console.log(req.session.booking_data)
-        
+
         if (!req.session.booking_data) return next(new errorHandling(400, "Please fill out the previous form."));
 
         if (req.session.booking_data["url1"] !== "/api/user/booking/choose-hotel") return next(new errorHandling(400, "Please fil out the previous form."));
@@ -96,7 +96,7 @@ module.exports.chooseRoom = async (req, res, next) => {
 // @endPoint:localhost:4000/api/user/booking/book
 module.exports.book = async (req, res, next) => {
     try {
-        if(req.user.role !== "user")return next(new errorHandling(401, "You are not authorized to perform this task."));
+        if (req.user.role !== "user") return next(new errorHandling(401, "You are not authorized to perform this task."));
 
         // Validate session data
         if (!req.session.booking_data) {
@@ -120,8 +120,8 @@ module.exports.book = async (req, res, next) => {
             return next(new errorHandling(404, "No room found by this ID."));
         }
         // console.log(searchRoom[0])
-        let roomPrice=searchRoom[0].price_per_night
-        
+        let roomPrice = searchRoom[0].price_per_night
+
         // console.log(roomPrice)
 
         // Calculate total price
@@ -146,51 +146,51 @@ module.exports.book = async (req, res, next) => {
 };
 
 
-module.exports.getBookingDataForAdmin=async(req,res,next)=>{
-    try{
-        if(req.user.role!==process.env.arole)return next (new errorHandling(401,"You donot have enough permission to perform this task."));
-        const email=req.body.email 
-        if(!email || Object.keys(req.body).l1ength===0)return next (new errorHandling(400,"Please provide email to get booking data."));
-        if(!validateEmail(email.trim()))return next (new errorHandling(400,"Please enter valid email address."));
-        const queryForFetchingId= `SELECT id FROM users WHERE email=?`
-        const [userData]=await connection.promise().query(queryForFetchingId,[email]);
-        if(!userData || userData.length===0)return next(new errorHandling(404,"No User found form this email."));
+module.exports.getBookingDataForAdmin = async (req, res, next) => {
+    try {
+        if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You donot have enough permission to perform this task."));
+        const email = req.body.email
+        if (!email || Object.keys(req.body).l1ength === 0) return next(new errorHandling(400, "Please provide email to get booking data."));
+        if (!validateEmail(email.trim())) return next(new errorHandling(400, "Please enter valid email address."));
+        const queryForFetchingId = `SELECT id FROM users WHERE email=?`
+        const [userData] = await connection.promise().query(queryForFetchingId, [email]);
+        if (!userData || userData.length === 0) return next(new errorHandling(404, "No User found form this email."));
 
-        const field=`check_in_date,check_out_date,guests,total_price,booking_date,arrival_time,number_of_room,transaction_status,transaction_uuid,transaction_code`
-        const bookingDataQuery=`SELECT ${field} from bookings WHERE user_id=?`
-        const id=userData[0]["id"]
-        const [getBokingData]=await connection.promise().query(bookingDataQuery,[id]) 
-        if(!getBokingData || getBokingData.length===0)return next(new errorHandling(404,"No booking data found form this email."));
+        const field = `check_in_date,check_out_date,guests,total_price,booking_date,arrival_time,number_of_room,transaction_status,transaction_uuid,transaction_code`
+        const bookingDataQuery = `SELECT ${field} from bookings WHERE user_id=?`
+        const id = userData[0]["id"]
+        const [getBokingData] = await connection.promise().query(bookingDataQuery, [id])
+        if (!getBokingData || getBokingData.length === 0) return next(new errorHandling(404, "No booking data found form this email."));
         res.status(200).json({
-            status:true,
-            message:getBokingData[0]
+            status: true,
+            message: getBokingData[0]
         })
 
 
-    }catch(error){
-        return next(new errorHandling(error.statusCode ||500,error.message))
+    } catch (error) {
+        return next(new errorHandling(error.statusCode || 500, error.message))
     }
 }
 
 
-module.exports.getBookingDataOfUser=async(req,res,next)=>{
-    try{
-        if(req.user.role!=="user")return next (new errorHandling(401,"You donot have enough permission to perform this task."));
-        const userId=req.user.id;//from checkJwt
-        if(!userId)return next(new errorHandling(400,"Please login and try again."));
-        if(isNaN(Number(userId)))return next(new errorHandling(404,"Invalid user id format."));
+module.exports.getBookingDataOfUser = async (req, res, next) => {
+    try {
+        if (req.user.role !== "user") return next(new errorHandling(401, "You donot have enough permission to perform this task."));
+        const userId = req.user.id;//from checkJwt
+        if (!userId) return next(new errorHandling(400, "Please login and try again."));
+        if (isNaN(Number(userId))) return next(new errorHandling(404, "Invalid user id format."));
 
-        const field=`check_in_date,check_out_date,guests,total_price,booking_date,arrival_time,number_of_room,transaction_status,transaction_uuid,transaction_code`
-        const bookingDataQuery=`SELECT ${field} from bookings WHERE user_id=?`
-        const [getBokingData]=await connection.promise().query(bookingDataQuery,[userId]) 
-        if(!getBokingData || getBokingData.length===0)return next(new errorHandling(404,"Empty booking data."));
+        const field = `check_in_date,check_out_date,guests,total_price,booking_date,arrival_time,number_of_room,transaction_status,transaction_uuid,transaction_code`
+        const bookingDataQuery = `SELECT ${field} from bookings WHERE user_id=?`
+        const [getBokingData] = await connection.promise().query(bookingDataQuery, [userId])
+        if (!getBokingData || getBokingData.length === 0) return next(new errorHandling(404, "Empty booking data."));
         res.status(200).json({
-            status:true,
-            message:getBokingData[0]
+            status: true,
+            message: getBokingData[0]
         })
 
 
-    }catch(error){
-        return next(new errorHandling(error.statusCode ||500,error.message))
+    } catch (error) {
+        return next(new errorHandling(error.statusCode || 500, error.message))
     }
 }

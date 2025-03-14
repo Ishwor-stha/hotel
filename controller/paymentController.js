@@ -167,5 +167,5 @@ const insertDetaisToDatabase = async (session, data) => {
         total_price
     ]);
 
-    
+
 };
