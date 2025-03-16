@@ -2,6 +2,7 @@ const errorHandling = require("../utils/errorHandling");
 const {
     connection
 } = require("../db");
+const mysql=require("mysql2")
 module.exports.createRoom = async (req, res, next) => {
     try {
         if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You donot have enough permission to perform this task."));
@@ -52,12 +53,13 @@ module.exports.updateRoom = async (req, res, next) => {
             return `${field}=?`
         })
         // inserting the room id in values array
-
+        fieldName.push("updated_at=?")
+        values.push(mysql.raw("CURRENT_TIMESTAMP"))
         values.push(roomId)
         // console.log(values );
         const updateQuery = `UPDATE rooms SET ${fieldName.join(',')} WHERE id=?`
         const updateRoom = await connection.promise().query(updateQuery, values)
-        console.log(updateRoom)
+        // console.log(updateRoom)
         if (updateRoom[0]["affectedRows"] === 0) return next(new errorHandling(500, "Cannot update the data.Please try again later."))
 
         res.status(200).json({

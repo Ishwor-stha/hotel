@@ -42,6 +42,8 @@ module.exports.updateRating = async (req, res, next) => {
 			values.push(req.body[field])
 			return `${field}=?`
 		})
+		fieldName.push("updated_at=?")
+        values.push(mysql.raw("CURRENT_TIMESTAMP"))
 		const updateQuery = `UPDATE ratings SET ${fieldName.join(',')} WHERE user_id = ? AND hotel_id = ?`
 
 		const updateRating = await connection.promise().query(updateQuery, [values, userId, hotelId])

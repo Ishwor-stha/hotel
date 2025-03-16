@@ -6,7 +6,7 @@ try {
         const query = `CREATE TABLE ratings (
         rating_id INT PRIMARY KEY AUTO_INCREMENT,
         user_id INT,
-        hotel_id,
+        hotel_id INT,
         score INT,
         FOREIGN KEY (user_id) REFERENCES users(id),
         FOREIGN KEY (hotel_id) REFERENCES hotels(id),
