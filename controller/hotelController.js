@@ -95,7 +95,7 @@ module.exports.getAllHotels = async (req, res, next) => {
 	try {
 		const query = `SELECT * FROM hotels`
 		const [hotels] = await connection.promise().query(query);
-		if (!hotels || hotels.length === 0) return next(new errorHandling(404, "Cannot find hotel."));
+		if (!hotels || hotels.length === 0) return next(new errorHandling(404, "Cannot find hotel in database."));
 		res.status(200).json({
 			status: true,
 			message: "Hotels fetched sucessfully.",
