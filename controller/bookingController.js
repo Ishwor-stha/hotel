@@ -148,7 +148,7 @@ module.exports.book = async (req, res, next) => {
 
 module.exports.getBookingDataForAdmin = async (req, res, next) => {
     try {
-        if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You donot have enough permission to perform this task."));
+        if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You do not have enough permission to perform this task."));
         const email = req.body.email
         if (!email || Object.keys(req.body).l1ength === 0) return next(new errorHandling(400, "Please provide email to get booking data."));
         if (!validateEmail(email.trim())) return next(new errorHandling(400, "Please enter valid email address."));
@@ -175,7 +175,7 @@ module.exports.getBookingDataForAdmin = async (req, res, next) => {
 
 module.exports.getBookingDataOfUser = async (req, res, next) => {
     try {
-        if (req.user.role !== "user") return next(new errorHandling(401, "You donot have enough permission to perform this task."));
+        if (req.user.role !== "user") return next(new errorHandling(401, "You do not have enough permission to perform this task."));
         const userId = req.user.id;//from checkJwt
         if (!userId) return next(new errorHandling(400, "Please login and try again."));
         if (isNaN(Number(userId))) return next(new errorHandling(404, "Invalid user id format."));

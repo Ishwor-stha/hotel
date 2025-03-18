@@ -5,7 +5,7 @@ const {
 const mysql=require("mysql2")
 module.exports.createRoom = async (req, res, next) => {
     try {
-        if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You donot have enough permission to perform this task."));
+        if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You do not have enough permission to perform this task."));
 
         if (!req.body || Object.keys(req.body).length === 0) return next(new errorHandling(400, "Empty body please send data ."))
         const possibleFields = ["hotel_id", "room_type", "price_per_night", "capacity", "features", "image", "availability"]
@@ -38,7 +38,7 @@ module.exports.createRoom = async (req, res, next) => {
 
 module.exports.updateRoom = async (req, res, next) => {
     try {
-        if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You donot have enough permission to perform this task."));
+        if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You do not have enough permission to perform this task."));
         const roomId = req.params.roomId
         if (!roomId || roomId.trim() === "") return next(new errorHandling(400, "No room id is given to update."))
         if (isNaN(Number(roomId))) return next(new errorHandling(400, "Room id must be a number"))

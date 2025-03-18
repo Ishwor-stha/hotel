@@ -89,7 +89,7 @@ module.exports.getAll = async (req, res, next) => {
 // @endPoint:localhost:4000/api/admin/get-one-admin/:id
 module.exports.getOneAdmin = async (req, res, next) => {
     try {
-        if (req.user.role !== process.env.arole) return next(new errorHandling(400, "You donot have permission to perform this action."))
+        if (req.user.role !== process.env.arole) return next(new errorHandling(400, "You do not have permission to perform this action."))
         const id = req.params.id;
         if (!id) return next(new errorHandling(400, "No admin id is given as parameters"));
         if (isNaN(Number(id))) return next(new errorHandling(400, "Only number are accepted."));
@@ -193,7 +193,7 @@ module.exports.createAdmin = async (req, res, next) => {
 // @endPoint:localhost:4000/api/admin/update-admin
 module.exports.updateAdmin = async (req, res, next) => {
     try {
-        if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You donot have enough permission to perform this task."))
+        if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You do not have enough permission to perform this task."))
         // from jwtVerify controller
         const id = req.user.id
         if (!id) return next(new errorHandling(409, "Please login first"))
