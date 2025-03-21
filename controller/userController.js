@@ -308,9 +308,9 @@ module.exports.updateUser = async (req, res, next) => {
             }
         });
         // Secure parameterized query
-        const query = `UPDATE users SET ${fieldWithQuestionMark.join(", ")} WHERE id = ?`;
         fieldWithQuestionMark.push("updated_at=?")
         values.push(mysql.raw("CURRENT_TIMESTAMP"))
+        const query = `UPDATE users SET ${fieldWithQuestionMark.join(", ")} WHERE id = ?`;
         values.push(userId); // Ensure userId is added safely
         console.log(query)
         console.log(values)
