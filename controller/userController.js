@@ -312,6 +312,8 @@ module.exports.updateUser = async (req, res, next) => {
         fieldWithQuestionMark.push("updated_at=?")
         values.push(mysql.raw("CURRENT_TIMESTAMP"))
         values.push(userId); // Ensure userId is added safely
+        console.log(query)
+        console.log(values)
         const [updateUser] = await connection.promise().query(query, values);
         if (updateUser.affectedRows === 0) return next(new errorHandling(500, "Cannot update the details. Please try again later."));
         res.status(200).json({
