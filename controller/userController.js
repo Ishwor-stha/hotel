@@ -128,8 +128,8 @@ module.exports.veriyfyUser = async (req, res, next) => {
             res.clearCookie('verificationToken');
             return next(new errorHandling(403, "Please fill out the form again. The verification time is over."));
         }
-        console.log(userDetails)
-        console.log(req.session.userData)
+        // console.log(userDetails)
+        // console.log(req.session.userData)
         if (userDetails.email !== req.session.userData.email || userDetails.sessionID !== req.session.userData.sessionID) {
             req.session.destroy((err) => {
                 if (err) return next(new errorHandling(500, "Something went wrong."));
@@ -153,7 +153,9 @@ module.exports.veriyfyUser = async (req, res, next) => {
             message: "Account verified sucessfully.Please login again."
         })
     } catch (error) {
-        console.log(error.stack)
+        req.session.destroy((err) => {
+            if (err) return next(new errorHandling(500, "Something went wrong."));
+        })
 
         return next(new errorHandling(500, error.message));
     }
