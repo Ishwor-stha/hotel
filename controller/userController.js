@@ -153,7 +153,7 @@ module.exports.veriyfyUser = async (req, res, next) => {
             message: "Account verified sucessfully.Please login again."
         })
     } catch (error) {
-        console.log("hello")
+        // console.log("hello")
         await res.clearCookie('verificationToken');
         await req.session.destroy((err) => {
             if (err) return next(new errorHandling(500, "Something went wrong.Please fill up the form again"));
