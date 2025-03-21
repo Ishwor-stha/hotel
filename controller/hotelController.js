@@ -107,6 +107,7 @@ module.exports.getAllHotels = async (req, res, next) => {
 	}
 }
 
+
 module.exports.findHotelByID = async (req, res, next) => {
 	try {
 		const hotelId = req.params.hotelId.trim();
