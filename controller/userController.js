@@ -139,7 +139,7 @@ module.exports.veriyfyUser = async (req, res, next) => {
         if (code !== req.session.userData.code) return next(new errorHandling(404, "The code doesnot match.Please enter correct code."));
         const values = [req.session.userData.fullName, req.session.userData.email, req.session.userData.dob, req.session.userData.gender, req.session.userData.address, req.session.userData.password, req.session.userData.phone, req.session.userData.phone2, req.session.userData.country, req.session.userData.city, req.session.userData.zip]
         // destroy the session
-        req.session.destroy((err) => {
+        await req.session.destroy((err) => {
             if (err) return next(new errorHandling(500, "Something went wrong."));
         })
         // clear the verificationToken from the client
@@ -153,6 +153,8 @@ module.exports.veriyfyUser = async (req, res, next) => {
             message: "Account verified sucessfully.Please login again."
         })
     } catch (error) {
+        console.log("hello")
+        res.clearCookie('verificationToken');
         await req.session.destroy((err) => {
             if (err) return next(new errorHandling(500, "Something went wrong."));
         })
