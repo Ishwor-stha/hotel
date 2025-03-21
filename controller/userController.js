@@ -129,6 +129,7 @@ module.exports.veriyfyUser = async (req, res, next) => {
             return next(new errorHandling(403, "Please fill out the form again. The verification time is over."));
         }
         console.log(userDetails)
+        console.log(req,session.userData)
         if (userDetails.email !== req.session.userData.email || userDetails.sessionID !== req.session.userData.sessionID) {
             req.session.destroy((err) => {
                 if (err) return next(new errorHandling(500, "Something went wrong."));
