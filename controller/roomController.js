@@ -70,24 +70,34 @@ module.exports.updateRoom = async (req, res, next) => {
         return next(new errorHandling(error.statusCode || 500, error.message))
     }
 }
-
 module.exports.getAllRooms = async (req, res, next) => {
     try {
-        const query = `SELECT * FROM rooms`
-        const [rooms] = await connection.promise().query(query)
-        if (rooms.length === 0) return next(new errorHandling(404, "There is no rooms presented on the database."))
-        // console.log(rooms)
+        let dbQuery = "SELECT * FROM rooms";
+        const queryParams = [];
+
+        if (req.query.price && ["asc", "desc"].includes(req.query.price.toLowerCase())) {
+            dbQuery =dbQuery+ " ORDER BY ?? ??"; 
+            queryParams.push("price_per_night", req.query.price.toUpperCase());
+        }
+
+        const [rooms] = await connection.promise().query(dbQuery, queryParams);
+
+        if (rooms.length === 0) {
+            return next(new errorHandling(404, "There are no rooms available in the database."));
+        }
+
         res.status(200).json({
             status: true,
             totalRooms: rooms.length,
-            message: "Rooms fetched sucessfully.",
+            message: "Rooms fetched successfully.",
             rooms
-        })
+        });
 
     } catch (error) {
-        return next(new errorHandling(error.statusCode || 500, error.message))
+        return next(new errorHandling(error.statusCode || 500, error.message));
     }
-}
+};
+
 
 
 module.exports.getRoomById = async (req, res, next) => {
