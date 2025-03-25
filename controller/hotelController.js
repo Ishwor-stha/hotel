@@ -98,6 +98,7 @@ module.exports.getAllHotels = async (req, res, next) => {
 		if (!hotels || hotels.length === 0) return next(new errorHandling(404, "Cannot find hotel in database."));
 		res.status(200).json({
 			status: true,
+			Total:hotels.length,
 			message: "Hotels fetched sucessfully.",
 			data: hotels
 		})

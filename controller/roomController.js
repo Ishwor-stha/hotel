@@ -23,7 +23,7 @@ module.exports.createRoom = async (req, res, next) => {
         // console.log(values);
 
         const query = `INSERT INTO rooms(${possibleFields.join(",")}) VALUES (${questionMark.join(",")})` //ie INSERT INTO rooms(room_type,price_per_night,capacity,features,images VALUES (?,?,?,?,?)
-        console.log(query)
+        // console.log(query)
         const uploadRoomData = await connection.promise().query(query, values);
         if (uploadRoomData[0]["affectedRows"] === 0) return next(new errorHandling(500, "Cannot upload the data.Please try again later."))
 
@@ -73,14 +73,14 @@ module.exports.updateRoom = async (req, res, next) => {
 module.exports.getAllRooms = async (req, res, next) => {
     try {
         let dbQuery = "SELECT * FROM rooms";
-        const queryParams = [];
-
+        // const queryParams = [];
+        
         if (req.query.price && ["asc", "desc"].includes(req.query.price.toLowerCase())) {
-            dbQuery =dbQuery+ " ORDER BY ?? ??"; 
-            queryParams.push("price_per_night", req.query.price.toUpperCase());
+            dbQuery = `SELECT * FROM rooms ORDER BY price_per_night ${req.query.price.toUpperCase()}`  
         }
-
-        const [rooms] = await connection.promise().query(dbQuery, queryParams);
+        // console.log(dbQuery)
+        
+        const [rooms] = await connection.promise().query(dbQuery);
 
         if (rooms.length === 0) {
             return next(new errorHandling(404, "There are no rooms available in the database."));
