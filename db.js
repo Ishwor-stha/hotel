@@ -1,5 +1,5 @@
 const mysql = require("mysql2");
-const kleur = require("kleur")
+const kleur = require("kleur");
 const dotenv=require("dotenv");
 dotenv.config()
 // Create a connection to the database
