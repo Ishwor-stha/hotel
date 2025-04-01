@@ -145,7 +145,9 @@ module.exports.book = async (req, res, next) => {
     }
 };
 
-
+// @desc:Controller to fetch all the booking data from the email
+// @method:GET
+// @endPoint:localhost:4000/api/admin/get-booking-data
 module.exports.getBookingDataForAdmin = async (req, res, next) => {
     try {
         if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You do not have enough permission to perform this task."));
@@ -172,7 +174,9 @@ module.exports.getBookingDataForAdmin = async (req, res, next) => {
     }
 }
 
-
+// @desc:Controller to fetch the booking data of user 
+// @method:GET
+// @endPoint:localhost:4000/api/user/get-booking-data
 module.exports.getBookingDataOfUser = async (req, res, next) => {
     try {
         if (req.user.role !== "user") return next(new errorHandling(401, "You do not have enough permission to perform this task."));

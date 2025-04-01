@@ -2,7 +2,9 @@ const { connection, connect } = require("../db");
 const errorHandling = require("../utils/errorHandling");
 const mysql=require("mysql2")
 
-
+// @desc:Controller to Create a hotel
+// @method:POST
+// @endPoint:localhost:4000/api/hotel/create-hotel
 module.exports.createHotel = async (req, res, next) => {
 	try {
 		if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You do not have enough permission to perform this task."));
@@ -33,7 +35,9 @@ module.exports.createHotel = async (req, res, next) => {
 
 }
 
-
+// @desc:Controller to update  hotel
+// @method:PATCH
+// @endPoint:localhost:4000/api/hotel/update-hotel/:id
 module.exports.updateHotel = async (req, res, next) => {
 	try {
 		if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You do not have enough permission to perform this task."));
@@ -72,6 +76,9 @@ module.exports.updateHotel = async (req, res, next) => {
 	}
 }
 
+// @desc:Controller to delete a hotel
+// @method:DELETE
+// @endPoint:localhost:4000/api/hotel/delete-hotel/:id
 module.exports.deleteHotel = async (req, res, next) => {
 	try {
 		if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You do not have enough permission to perform this task."));
@@ -91,6 +98,10 @@ module.exports.deleteHotel = async (req, res, next) => {
 	}
 }
 
+
+// @desc:Controller to get all hotel
+// @method:GET
+// @endPoint:localhost:4000/api/hotel/get-all-hotel
 module.exports.getAllHotels = async (req, res, next) => {
 	try {
 		const query = `SELECT * FROM hotels`
@@ -108,6 +119,9 @@ module.exports.getAllHotels = async (req, res, next) => {
 	}
 }
 
+// @desc:Controller to get  hotel by id
+// @method:GET
+// @endPoint:localhost:4000/api/hotel/get-hotel/:hotelId
 
 module.exports.findHotelByID = async (req, res, next) => {
 	try {
