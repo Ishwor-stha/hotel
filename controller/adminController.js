@@ -309,17 +309,19 @@ module.exports.login = async (req, res, next) => {
 // @endPoint:localhost:4000/api/admin/forget-password
 module.exports.forgetPassword = async (req, res, next) => {
     try {
-        const { email } = req.body
-        if (!email) return next(new errorHandling(400, "Please enter email."));
-        if (!validateEmail(email)) return next(new errorHandling(400, "Please enter valid email address."));
-        const queryForFetching = `SELECT name FROM admin WHERE email=?`
+        const { email } = req.body;
+        if (!email) return next(new errorHandling(400, "Please provide an email address."));
+        if (!validateEmail(email)) return next(new errorHandling(400, "Invalid email address format."));
+
+        const queryForFetching = `SELECT name FROM admin WHERE email=?`;
         const [data] = await connection.promise().query(queryForFetching, [email]);
-        if (data.length === 0) return next(new errorHandling(404, "No user found from this email address.Please reenter a email."));
-        const token = crypto.randomBytes(8).toString('hex')
-        const link = `${process.env.domain}api/admin/reset-password/${token}`
+        if (data.length === 0) return next(new errorHandling(404, "No user found with this email address."));
+
+        const token = crypto.randomBytes(8).toString('hex');
+        const link = `${process.env.domain}api/admin/reset-password/${token}`;
         const name = data[0].name;
         const message = forgetPasswordMessage(link, name);
-        const subject = "Reset link";
+        const subject = "Reset Password Link";
 
         await sendMessage(res, email, subject, message);
         const query = `UPDATE admin SET code = ? WHERE email = ?`;
@@ -327,16 +329,15 @@ module.exports.forgetPassword = async (req, res, next) => {
 
         res.status(200).json({
             status: true,
-            message: "Reset link is sent to your email"
-        })
-
-
-
+            message: "A reset link has been sent to your email."
+        });
     } catch (error) {
-        const quer = `UPDATE admin SET code = ? WHERE email = ?`;
-        await connection.promise().query(quer, [null, email])
-
         return next(new errorHandling(error.statusCode || 500, error.message));
+    } finally {
+        // Ensure code is reset to null in case of any failure
+        if (email) {
+            await connection.promise().query(`UPDATE admin SET code = ? WHERE email = ?`, [null, email]);
+        }
     }
 }
 
