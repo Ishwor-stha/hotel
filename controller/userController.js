@@ -1,5 +1,5 @@
 const errorHandling = require("../utils/errorHandling");
-const mysql=require("mysql2")
+const mysql = require("mysql2")
 const {
     connection
 } = require("../db");
@@ -113,6 +113,10 @@ module.exports.createUser = async (req, res, next) => {
         return next(new errorHandling(500, error.message));
     }
 }
+
+// @desc:Controller to verify user 
+// @method:POST
+// @endPoint:localhost:4000/api/user/verify-user
 module.exports.veriyfyUser = async (req, res, next) => {
     try {
         const code = req.body.code
@@ -216,6 +220,9 @@ module.exports.login = async (req, res, next) => {
     }
 }
 
+// @desc:Controller to find the user by id
+// @method:GET
+// @endPoint:localhost:4000/api/user/get-user/14
 module.exports.findUserById = async (req, res, next) => {
     try {
         if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You do not have enough permission to take this action."));
@@ -238,6 +245,10 @@ module.exports.findUserById = async (req, res, next) => {
     }
 
 }
+
+// @desc:Controller to find the user BY EMAIL
+// @method:GET
+// @endPoint:localhost:4000/api/user/get-user/
 module.exports.findUserByEmail = async (req, res, next) => {
     try {
         if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You do not have enough permission to take this action."));
@@ -260,6 +271,9 @@ module.exports.findUserByEmail = async (req, res, next) => {
 
 }
 
+// @desc:Controller to find update user 
+// @method:PATCH
+// @endPoint:http://localhost:4000/api/user/update-user
 module.exports.updateUser = async (req, res, next) => {
     try {
         if (req.user.role !== "user") return next(new errorHandling(401, "You do not have enough permission to take this action."));
@@ -324,6 +338,10 @@ module.exports.updateUser = async (req, res, next) => {
         return next(new errorHandling(error.statusCode || 500, error.message));
     }
 };
+
+// @desc:Controller to send the reset link to the user email
+// @method:POST
+// @endPoint:http://localhost:4000/api/user/forget-password
 module.exports.forgetPassword = async (req, res, next) => {
     try {
         const {
@@ -352,6 +370,10 @@ module.exports.forgetPassword = async (req, res, next) => {
         return next(new errorHandling(error.statusCode || 500, error.message));
     }
 }
+
+// @desc:Controller to update the password
+// @method:PATCH
+// @endPoint:http://localhost:4000/api/user/reset-password/:code
 module.exports.resetPassword = async (req, res, next) => {
     try {
         const userCode = req.params.code
@@ -369,7 +391,7 @@ module.exports.resetPassword = async (req, res, next) => {
         if (!query[0].code) return next(new errorHandling(400, "Something went wrong.Please try to resend code again"));
         if (query[0].code !== userCode) return next(new errorHandling(400, "Please enter correct code."));
         const hashedPassword = bcrypt.hashSync(password, 10);
-        await connection.promise().query(`UPDATE admin SET password = ?,code=?,updated_at=? WHERE email = ?`, [hashedPassword, null,mysql.raw("CURRENT_TIMESTAMP"), email])
+        await connection.promise().query(`UPDATE admin SET password = ?,code=?,updated_at=? WHERE email = ?`, [hashedPassword, null, mysql.raw("CURRENT_TIMESTAMP"), email])
         res.status(200).json({
             status: true,
             message: "Password updated sucessfully"
