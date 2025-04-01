@@ -3,6 +3,11 @@ const {
     connection
 } = require("../db");
 const mysql=require("mysql2")
+
+
+// @desc:Controller to create  room
+// @method:POST
+// @endPoint:http://localhost:4000/api/rooms/create-room
 module.exports.createRoom = async (req, res, next) => {
     try {
         if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You do not have enough permission to perform this task."));
@@ -35,7 +40,9 @@ module.exports.createRoom = async (req, res, next) => {
         return next(new errorHandling(error.statusCode || 500, error.message))
     }
 }
-
+// @desc:Controller to update  room
+// @method:PATCH
+// @endPoint:localhost:4000/api/rooms/update-room/:id
 module.exports.updateRoom = async (req, res, next) => {
     try {
         if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You do not have enough permission to perform this task."));
@@ -70,6 +77,10 @@ module.exports.updateRoom = async (req, res, next) => {
         return next(new errorHandling(error.statusCode || 500, error.message))
     }
 }
+
+// @desc:Controller to get all rooms with the details of  room
+// @method:GET
+// @endPoint:http://localhost:4000/api/rooms/get-rooms?page=1
 module.exports.getAllRooms = async (req, res, next) => {
     try {
         let dbQuery = "SELECT * FROM rooms";
@@ -107,7 +118,9 @@ module.exports.getAllRooms = async (req, res, next) => {
 };
 
 
-
+// @desc:Controller to get rooms by id  
+// @method:GET
+// @endPoint:http://localhost:4000/api/rooms/get-room/1
 module.exports.getRoomById = async (req, res, next) => {
     try {
         const roomId = req.params.roomId;
@@ -128,7 +141,9 @@ module.exports.getRoomById = async (req, res, next) => {
     }
 }
 
-
+// @desc:Controller to delete rooms by id  
+// @method:DELETE
+// @endPoint:http://localhost:4000/api/rooms/delete-room/1
 module.exports.deleteRoomById = async (req, res, next) => {
     try {
         if (req.user.role !== process.env.arole) return next(new errorHandling(401, "You are not authorized to perform this task."))

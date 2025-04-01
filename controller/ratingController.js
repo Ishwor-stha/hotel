@@ -1,5 +1,10 @@
 const errorHandling = require("../utils/errorHandling")
 const { connection } = require("../db")
+
+
+// @desc:Controller to post rating
+// @method:POST
+// @endPoint:localhost:4000/api/rating/upload-rating
 module.exports.uploadRating = async (req, res, next) => {
 	try {
 		if (req.user.role !== "user") return next(new errorHandling(401, "You are not authorized to perform this task."))
@@ -26,6 +31,10 @@ module.exports.uploadRating = async (req, res, next) => {
 	}
 }
 
+
+// @desc:Controller to update rating
+// @method:PATCH
+// @endPoint:localhost:4000/api/rating/update-rating
 module.exports.updateRating = async (req, res, next) => {
 	try {
 		if (req.user.role !== "user") return next(new errorHandling(401, "You are not authorized to perform this task."))
@@ -58,6 +67,10 @@ module.exports.updateRating = async (req, res, next) => {
 	}
 }
 
+// @desc:Controller to get rating for user
+// @method:GET
+// @endPoint:localhost:4000/api/rating/get-rating
+
 module.exports.getRating = async (req, res, next) => {
 	try {
 
@@ -79,6 +92,11 @@ module.exports.getRating = async (req, res, next) => {
 
 	}
 }
+
+
+// @desc:Controller to get all rating 
+// @method:GET
+// @endPoint:localhost:4000/api/rating/get-ratings
 module.exports.getRatings = async (req, res, next) => {
 	try {
 
@@ -98,6 +116,11 @@ module.exports.getRatings = async (req, res, next) => {
 
 	}
 }
+
+
+// @desc:Controller to get deleting the rating by user 
+// @method:DELETE
+// @endPoint:localhost:4000/api/rating/delete-rating
 module.exports.deleteRating = async (req, res, next) => {
 	try {
 
