@@ -79,8 +79,15 @@ module.exports.getAllRooms = async (req, res, next) => {
             dbQuery = `SELECT * FROM rooms ORDER BY price_per_night ${req.query.price.toUpperCase()}`  
         }
         // console.log(dbQuery)
+        const page = parseInt(req.query.page) || 1; 
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
         
-        const [rooms] = await connection.promise().query(dbQuery);
+        dbQuery += ` LIMIT ? OFFSET ?`;
+       
+
+        
+        const [rooms] = await connection.promise().query(dbQuery,[limit,offset]);
 
         if (rooms.length === 0) {
             return next(new errorHandling(404, "There are no rooms available in the database."));
@@ -89,6 +96,7 @@ module.exports.getAllRooms = async (req, res, next) => {
         res.status(200).json({
             status: true,
             totalRooms: rooms.length,
+            page:page,
             message: "Rooms fetched successfully.",
             rooms
         });
