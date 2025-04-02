@@ -101,26 +101,37 @@ module.exports.getRating = async (req, res, next) => {
 // @endPoint:localhost:4000/api/rating/get-ratings
 module.exports.getRatings = async (req, res, next) => {
 	try {
-
-		const hotelId = req.body.hotelId
-		if (!hotelId) return next(new errorHandling(400, "Cannot get hotel id."))
-		const page = parseInt(req.query.page) || 1; // Default to page 1
-        const limit =  10; // Default to 10 records per page
-        const offset = (page - 1) * limit;
-		const query = `SELECT score,reviewMessage FROM ratings WHERE hotel_id=? LIMIT ? OFFSET ?`
-		const [rating] = await connection.promise().query(query, [hotelId ,limit, offset])
-		if (rating.length == 0) return next(new errorHandling(400, "Cannot get rating details."))
-		res.status(200).json({
-			status: true,
-			total: rating[0].length,
-			message: "Rating fetched sucessfully",
-			data: rating[0]
-		})
+	  const hotelId = req.body.hotelId;
+	  if (!hotelId) return next(new errorHandling(400, "Cannot get hotel id."));
+	  
+	  const page = parseInt(req.query.page) || 1; // Default to page 1
+	  const limit = 10; // 10 records per page
+	  const offset = (page - 1) * limit;
+	  
+	  // Join ratings with users to fetch the name column
+	  const query = `
+		SELECT r.score, r.reviewMessage, u.name 
+		FROM ratings AS r
+		JOIN users AS u ON r.user_id = u.id
+		WHERE r.hotel_id = ? 
+		LIMIT ? OFFSET ?`;
+		
+	  const [rating] = await connection.promise().query(query, [hotelId, limit, offset]);
+	  
+	  if (rating.length === 0)
+		return next(new errorHandling(400, "Cannot get rating details."));
+		
+	  res.status(200).json({
+		status: true,
+		total: rating.length,
+		message: "Rating fetched successfully",
+		data: rating
+	  });
 	} catch (error) {
-		return next(new errorHandling(error.statusCode || 500, error.message))
-
+	  return next(new errorHandling(error.statusCode || 500, error.message));
 	}
-}
+  };
+  
 
 
 // @desc:Controller to get deleting the rating by user 
