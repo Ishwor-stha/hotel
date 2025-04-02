@@ -12,6 +12,8 @@ module.exports.uploadRating = async (req, res, next) => {
 		const { hotelId, score, reviewMessage } = req.body
 		if (!userId) return next(new errorHandling(400, "user id is missing."))
 		if (!hotelId) return next(new errorHandling(400, "Hotel id is missing."))
+		const checkHotel=await connection.promise().query(`SELECT id FROM hotels WHERE id=?`,[hotelId])
+		if (checkHotel[0].length === 0) return next(new errorHandling(400, "Cannot find the hotel from this Id."))
 		if (!score || !String(score).trim() || !reviewMessage || !reviewMessage.trim()) return next(new errorHandling(400, "Score or review message is missing.Please check again."))
 		if (score > 5 && score < 0) return next(new errorHandling(400, "Invalid score number.Please Please make sure your score is in(0-5)"))
 		//fetch the data to check if the user has already review 

@@ -8,6 +8,7 @@ try {
         user_id INT,
         hotel_id INT,
         score INT,
+        reviewMessage VARCHAR(255) NOT NULL, 
         FOREIGN KEY (user_id) REFERENCES users(id),
         FOREIGN KEY (hotel_id) REFERENCES hotels(id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
