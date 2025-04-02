@@ -102,8 +102,11 @@ module.exports.getRatings = async (req, res, next) => {
 
 		const hotelId = req.body.hotelId
 		if (!hotelId) return next(new errorHandling(400, "Cannot get hotel id."))
-		const query = `SELECT score,reviewMessage FROM ratings WHERE hotel_id=?`
-		const [rating] = await connection.promise().query(query, [hotelId])
+		const page = parseInt(req.query.page) || 1; // Default to page 1
+        const limit =  10; // Default to 10 records per page
+        const offset = (page - 1) * limit;
+		const query = `SELECT score,reviewMessage FROM ratings WHERE hotel_id=? LIMIT ? OFFSET ?`
+		const [rating] = await connection.promise().query(query, [hotelId ,limit, offset])
 		if (rating.length == 0) return next(new errorHandling(400, "Cannot get rating details."))
 		res.status(200).json({
 			status: true,
