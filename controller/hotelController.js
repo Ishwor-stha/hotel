@@ -134,7 +134,7 @@ module.exports.findHotelByID = async (req, res, next) => {
 		res.status(200).json({
 			status: true,
 			message: "Hotel fetched sucessfully.",
-			data: getHotelData
+			data: getHotelData[0]
 		})
 
 	} catch (error) {
