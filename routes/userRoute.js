@@ -12,7 +12,7 @@ Router.route("/verify-user").post(veriyfyUser)
 Router.route("/get-booking-data").get(checkJwt,getBookingDataOfUser)
 Router.route("/update-user").patch(checkJwt,updateUser)
 Router.route("/forget-password").post(forgetPassword)
-Router.route("/reset-password").patch(resetPassword)
+Router.route("/reset-password/:code").patch(resetPassword)
 
 
 

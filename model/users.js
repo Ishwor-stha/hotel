@@ -16,7 +16,7 @@ try {
             password VARCHAR(255) NOT NULL,           
             phone VARCHAR(15) NOT NULL,  
             phone2 VARCHAR(15) NOT NULL,  
-            
+            code VARCHAR(50) ,
             role ENUM('user') DEFAULT 'user', 
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP NULL 

@@ -387,11 +387,12 @@ module.exports.resetPassword = async (req, res, next) => {
         if (!validateEmail(email)) return next(new errorHandling(400, "Please enter valid email address"));
         if (password !== confirmPassword) return next(new errorHandling(400, "Confirm password and password must be same."));
         const [query] = await connection.promise().query(`SELECT email,code FROM users WHERE email=?`, [email]);
+        // console.log(query[0].code)
         if (!query || query[0].length === 0) return next(new errorHandling(400, "The code or email is not found.Please try again."));
         if (!query[0].code) return next(new errorHandling(400, "Something went wrong.Please try to resend code again"));
         if (query[0].code !== userCode) return next(new errorHandling(400, "Please enter correct code."));
         const hashedPassword = bcrypt.hashSync(password, 10);
-        await connection.promise().query(`UPDATE admin SET password = ?,code=?,updated_at=? WHERE email = ?`, [hashedPassword, null, mysql.raw("CURRENT_TIMESTAMP"), email])
+        await connection.promise().query(`UPDATE users SET password = ?,code=?,updated_at=? WHERE email = ?`, [hashedPassword, null, mysql.raw("CURRENT_TIMESTAMP"), email])
         res.status(200).json({
             status: true,
             message: "Password updated sucessfully"
