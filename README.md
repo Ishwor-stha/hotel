@@ -43,7 +43,8 @@ A Node.js-based hotel booking system with Express, MySQL, and eSewa payment inte
 - **Axios**: HTTP client for API requests.
 - **Moment.js**: Date manipulation for booking calculations.
 - **Crypto**: Generates secure tokens and signatures.
-- **Express-Session**: Session management for booking\n- **Other Dependencies**: mysql2, dotenv, path.
+- **Express-Session**: Session management for booking
+- **Other Dependencies**: mysql2, dotenv, path.
 
 ## Installation
 1. **Clone the repository**:
