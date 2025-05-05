@@ -17,7 +17,6 @@ A Node.js-based hotel booking system with Express, MySQL, and eSewa payment inte
   - [Rating Routes](#rating-routes)
 - [Usage](#usage)
 - [Contributing](#contributing)
-- [License](#license)
 
 ## Features
 - **Admin Management**: Create, update, fetch, and manage admin accounts with role-based access control.
@@ -183,13 +182,4 @@ EMAIL_PASS=your_email_password
    - View hotel details (`/api/hotel/get-hotel/:hotelId`).
    - View rooms (`/api/rooms/get-rooms`).
    - View hotel ratings (`/api/rating/get-ratings`).
-
-## Contributing
-Contributions are welcome! Please follow these steps:
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature/your-feature`).
-3. Commit your changes (`git commit -m 'Add your feature'`).
-4. Push to the branch (`git push origin feature/your-feature`).
-5. Open a pull request.
-
 
