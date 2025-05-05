@@ -15,7 +15,6 @@ A Node.js-based hotel booking system with Express, MySQL, and eSewa payment inte
   - [Booking Routes](#booking-routes)
   - [Payment Routes](#payment-routes)
   - [Rating Routes](#rating-routes)
-- [Database Schema](#database-schema)
 - [Usage](#usage)
 - [Contributing](#contributing)
 - [License](#license)
