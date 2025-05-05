@@ -49,8 +49,8 @@ A Node.js-based hotel booking system with Express, MySQL, and eSewa payment inte
 ## Installation
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-repo/hotel-booking-system.git
-   cd hotel-booking-system
+   git clone https://github.com/Ishwor-stha/hotel.git
+   cd hotel
    ```
 2. **Install dependencies**:
    ```bash
